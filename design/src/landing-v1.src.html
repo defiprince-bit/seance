@@ -1,0 +1,165 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Séance: ask in English, answered in COBOL</title>
+<!--HEAD-->
+<style>
+.wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 var(--s-8)}
+.hero{display:grid;grid-template-columns:5fr 7fr;gap:var(--s-14);align-items:center;padding:var(--s-20) 0 var(--s-14);min-height:760px}
+.hero h1{margin:var(--s-4) 0 var(--s-5);font:400 var(--text-hero)/1.02 var(--font-display);letter-spacing:-.01em}
+.hero h1 em{color:var(--candle)}
+.hero p.lede{font-size:var(--text-md);color:var(--ash);max-width:440px;margin:0 0 var(--s-8)}
+.ctas{display:flex;gap:var(--s-3);align-items:center;margin-bottom:var(--s-6)}
+/* preview */
+.stage{position:relative;padding-top:120px}
+.board{overflow:visible;position:absolute;left:-10px;right:-10px;top:0;height:auto;pointer-events:none}
+.board text{font:italic 400 30px var(--font-display);fill:var(--ash);opacity:.28}
+.candlelight{position:absolute;left:50%;top:40%;width:620px;height:620px;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(233,169,87,.16),transparent);animation:breathe var(--d-breathe) ease-in-out infinite;pointer-events:none}
+.preview{position:relative;border-radius:var(--r-lg);border:1px solid var(--seam-strong);background:var(--crypt);box-shadow:var(--shadow-pop);overflow:hidden}
+.pv-task{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--seam);font-size:var(--text-sm)}
+.pv-task .q{flex:1;color:var(--bone)} .pv-task .q span{color:var(--dust)}
+.pv-body{display:grid;grid-template-columns:1.25fr 1fr}
+.pv-code{padding:14px 0;font:400 12.5px/20px var(--font-code);color:var(--phosphor);text-shadow:var(--glow-phosphor);position:relative}
+.pv-code div{padding:0 16px 0 44px;white-space:pre;position:relative}
+.pv-code div b{position:absolute;left:12px;width:22px;text-align:right;color:var(--dust);font-weight:400;text-shadow:none}
+.pv-code .on{background:var(--candle-veil)} .pv-code .on::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--candle)}
+.kw{color:#D4F5DC} .lit{color:var(--candle)}
+.pv-ghost{border-left:1px solid var(--seam);padding:18px}
+.pv-ghost .who svg{width:16px;height:16px;flex:none}
+.pv-ghost .who{display:flex;align-items:center;gap:8px;color:var(--ecto);font-size:var(--text-xs);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.pv-ghost blockquote{margin:0;font:italic 400 20px/1.3 var(--font-display);color:var(--bone)}
+.pv-ghost p{margin:10px 0 0;color:var(--ash);font-size:var(--text-sm)}
+.pv-py{border-top:1px solid var(--seam);padding:12px 16px;display:flex;gap:12px;align-items:center;font:400 12.5px/1.5 var(--font-code);color:var(--ash)}
+.pv-py .tag{font:500 11px/1 var(--font-body);letter-spacing:.1em;text-transform:uppercase;color:var(--dust)}
+.match{margin-left:auto;color:var(--phosphor);font-family:var(--font-body);font-size:var(--text-xs)}
+/* sections */
+section.band{padding:var(--s-20) 0;border-top:1px solid var(--seam);position:relative;z-index:1}
+.sh{display:flex;justify-content:space-between;align-items:end;gap:var(--s-8);margin-bottom:var(--s-10)}
+.sh h2{margin:var(--s-3) 0 0;font:400 var(--text-2xl)/1.1 var(--font-display)} .sh h2 em{color:var(--candle)}
+.sh p{max-width:380px;color:var(--ash);margin:0}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-5)}
+.step{padding:var(--s-6);border:1px solid var(--seam);border-radius:var(--r-md);background:var(--crypt)}
+.step .n{font:italic 400 var(--text-xl)/1 var(--font-display);color:var(--candle)}
+.step h3{margin:var(--s-4) 0 var(--s-2);font:italic 400 var(--text-lg)/1.2 var(--font-display)}
+.step p{margin:0;color:var(--ash)}
+.spirits{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-5)}
+.spirit{padding:var(--s-6);border:1px solid var(--seam);border-radius:var(--r-md);background:var(--crypt);text-decoration:none;transition:border-color var(--d-fast) var(--ease-out),transform var(--d-base) var(--ease-out)}
+.spirit:hover{border-color:var(--seam-strong);transform:translateY(-2px)}
+.spirit .top{display:flex;justify-content:space-between;align-items:baseline}
+.spirit h3{margin:0;font:italic 400 var(--text-xl)/1 var(--font-display)}
+.spirit .yr{font:400 18px/1 var(--font-crt);color:var(--dust)}
+.spirit .ep{color:var(--ecto);margin:6px 0 var(--s-4);font-size:var(--text-sm)}
+.spirit pre{margin:0;padding:12px;border-radius:var(--r-sm);font:400 12px/18px var(--font-code);color:var(--phosphor);overflow:hidden;border:1px solid var(--seam)}
+.spirit p{color:var(--ash);margin:var(--s-4) 0 0;font-size:var(--text-sm)}
+.why{display:grid;grid-template-columns:7fr 5fr;gap:var(--s-14);align-items:start}
+.why blockquote{margin:0;font:italic 400 34px/1.2 var(--font-display);color:var(--bone)}
+.why blockquote em{color:var(--candle);font-style:italic}
+.why .col p{color:var(--ash);margin:0 0 var(--s-4)}
+.why ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.why li{display:flex;gap:10px;color:var(--bone)} .why li::before{content:"";flex:none;width:6px;height:6px;margin-top:8px;border-radius:50%;background:var(--candle)}
+.final{text-align:center;padding:var(--s-20) 0}
+.final h2{font:400 var(--text-2xl)/1.1 var(--font-display);margin:0 0 var(--s-3)} .final h2 em{color:var(--candle)}
+.final p{color:var(--ash);margin:0 0 var(--s-8)}
+footer{border-top:1px solid var(--seam);padding:var(--s-8) 0 var(--s-10);position:relative;z-index:1}
+footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:var(--s-6)}
+@media (max-width:1024px){.hero{grid-template-columns:1fr;min-height:0;padding-top:var(--s-14)}.steps,.spirits{grid-template-columns:1fr 1fr}.why{grid-template-columns:1fr}}
+@media (max-width:767px){
+ .wrap{padding:0 var(--s-5)} .topbar{padding:0 var(--s-4)} .topbar nav{display:none}
+ .topbar .btn{height:32px;padding:0 12px}
+ .hero{padding:var(--s-8) 0 var(--s-10);gap:var(--s-8)}
+ .hero h1{font-size:40px} .hero p.lede{font-size:15px}
+ .ctas{flex-wrap:wrap} .ctas .btn{flex:1;justify-content:center}
+ .pv-body{grid-template-columns:1fr} .pv-ghost{border-left:0;border-top:1px solid var(--seam)} .pv-code{font-size:11.5px}
+ .board{display:none} .stage{padding-top:0}
+ .steps,.spirits{grid-template-columns:1fr} .sh{flex-direction:column;align-items:start}
+ .sh h2,.final h2{font-size:32px} .why blockquote{font-size:26px}
+ footer .wrap{flex-direction:column;align-items:start}
+}
+</style></head><body>
+<header class="topbar">
+  <a class="brand" href="#" aria-label="Séance home">{{MARK}}<b>Séance</b></a>
+  <nav aria-label="Primary"><a href="#how">How it works</a><a href="#spirits">The spirits</a><a href="#why">Why COBOL</a></nav>
+  <span class="spacer"></span>
+  <a class="btn btn-candle" href="workspace.html">Begin a séance</a>
+</header>
+<main>
+<div class="wrap">
+  <section class="hero">
+    <div class="flicker-in">
+      <span class="eyebrow">A trainer for languages that won’t stay buried</span>
+      <h1>Ask in plain English.<br><em class="it">A programmer from 1959 answers.</em></h1>
+      <p class="lede">Séance writes your task in COBOL, Fortran or BASIC, runs it in your browser, and a patient ghost walks you through every line. Then it brings the answer back to modern Python.</p>
+      <div class="ctas">
+        <a class="btn btn-candle btn-lg" href="workspace.html">Begin a séance <span class="kbd">⏎</span></a>
+        <a class="btn btn-lg" href="#how">See how it works</a>
+      </div>
+      <p class="foot">Runs in your browser. Generated code is for learning, not production.</p>
+    </div>
+    <div class="stage rise-in" style="animation-delay:120ms">
+      <div class="candlelight" aria-hidden="true"></div>
+      <svg class="board" viewBox="0 0 760 170" aria-hidden="true"><defs><path id="arc" d="M40 160 Q 380 0 720 160"/></defs><text><textPath href="#arc" startOffset="5%" textLength="90%">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</textPath></text></svg>
+      <div class="preview" role="img" aria-label="Preview of the séance workspace: a COBOL program with its active line highlighted and the ghost's explanation beside it">
+        <div class="pv-task"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#E9A957" stroke-width="1.5"/></svg><span class="q">Parse sales.csv and total the sales <span>· COBOL</span></span><span class="pill"><i></i>Spirit present</span></div>
+        <div class="pv-body">
+          <div class="pv-code crt">
+<div><b>23</b><span class="kw">PERFORM UNTIL</span> WS-EOF = <span class="lit">"Y"</span></div>
+<div><b>24</b>    <span class="kw">READ</span> SALES-FILE</div>
+<div><b>25</b>        <span class="kw">AT END MOVE</span> <span class="lit">"Y"</span> <span class="kw">TO</span> WS-EOF</div>
+<div><b>26</b>        <span class="kw">NOT AT END</span></div>
+<div class="on"><b>27</b>          <span class="kw">UNSTRING</span> SALES-LINE</div>
+<div class="on"><b>  </b>            <span class="kw">DELIMITED BY</span> <span class="lit">","</span></div>
+<div class="on"><b>28</b>            <span class="kw">INTO</span> WS-REGION WS-AMOUNT-TXT</div>
+<div class="on"><b>29</b>          <span class="kw">END-UNSTRING</span></div>
+<div><b>30</b>          <span class="kw">COMPUTE</span> WS-AMOUNT =</div>
+<div><b>  </b>            <span class="kw">FUNCTION NUMVAL</span>(WS-AMOUNT-TXT)</div>
+<div><b>31</b>          <span class="kw">ADD</span> WS-AMOUNT <span class="kw">TO</span> WS-TOTAL</div>
+<div><b>32</b>    <span class="kw">END-READ</span></div>
+<div><b>33</b><span class="kw">END-PERFORM</span></div>
+          </div>
+          <div class="pv-ghost">
+            <div class="who">{{MARK}} The ghost · lines 27–29</div>
+            <blockquote>“We had no split(). We had UNSTRING, and we liked it.”</blockquote>
+            <p>It cuts each line at the comma and pours the pieces into two named boxes: the region, then the amount as text.</p>
+          </div>
+        </div>
+        <div class="pv-py"><span class="tag">Python</span><span>for row in csv.DictReader(f):</span><span class="match">✓ Both print 5871.50</span></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<section class="band" id="how"><div class="wrap">
+  <div class="sh"><div><span class="eyebrow">How a séance works</span><h2>Three steps, <em class="it">one very old friend.</em></h2></div><p>You never have to write the dead language yourself. You just have to be curious about it.</p></div>
+  <div class="steps">
+    <div class="step"><div class="n">I.</div><h3>Say what you need</h3><p>Type a modern task in plain English, and attach a small file if it needs one.</p></div>
+    <div class="step"><div class="n">II.</div><h3>The ghost writes and runs it</h3><p>Real COBOL, Fortran or BASIC appears line by line and runs in your browser. You’ll see the actual output.</p></div>
+    <div class="step"><div class="n">III.</div><h3>Bring it back to Python</h3><p>Every line is explained, then translated to modern Python, and both results are checked against each other.</p></div>
+  </div>
+</div></section>
+
+<section class="band" id="spirits"><div class="wrap">
+  <div class="sh"><div><span class="eyebrow">The spirits</span><h2>Choose <em class="it">who answers.</em></h2></div><p>Each language has its own temperament. Start with COBOL; that’s where the work is.</p></div>
+  <div class="spirits">
+    <a class="spirit" href="picker.html"><div class="top"><h3>COBOL</h3><span class="yr">b. 1959</span></div><div class="ep">The ledger keeper</div><pre class="crt">ADD WS-AMOUNT TO WS-TOTAL
+DISPLAY "TOTAL: " WS-TOTAL-OUT</pre><p>Reads almost like English. Still behind a lot of payroll, banking and public records.</p></a>
+    <a class="spirit" href="picker.html"><div class="top"><h3>Fortran</h3><span class="yr">b. 1957</span></div><div class="ep">The calculator</div><pre class="crt">total = total + amount
+print '(A,F10.2)', 'TOTAL:', total</pre><p>Built for numbers. Still turns up in science and engineering code.</p></a>
+    <a class="spirit" href="picker.html"><div class="top"><h3>BASIC</h3><span class="yr">b. 1964</span></div><div class="ep">The first teacher</div><pre class="crt">40 LET T = T + A
+50 GOTO 20</pre><p>The language a generation learned on. Line numbers, GOTO and all.</p></a>
+  </div>
+</div></section>
+
+<section class="band" id="why"><div class="wrap why">
+  <blockquote>Some of the systems that pay pensions and move money were written before most of us were born. <em>The people who wrote them are retiring.</em></blockquote>
+  <div class="col">
+    <p>Séance is a gentle first hour with COBOL and its cousins. You won’t have to install a compiler or read a 600-page manual first.</p>
+    <ul><li>See a working program for a task you already understand</li><li>Get a plain-English reason for every line</li><li>Map each idea to the Python you already know</li></ul>
+  </div>
+</div></section>
+
+<section class="band final"><div class="wrap">
+  <h2>The candles are lit. <em class="it">Ask anything.</em></h2>
+  <p>Your first séance takes about a minute.</p>
+  <a class="btn btn-candle btn-lg" href="workspace.html">Begin a séance <span class="kbd">⏎</span></a>
+</div></section>
+</main>
+<footer><div class="wrap"><a class="brand" href="#">{{MARK}}<b>Séance</b></a><span class="foot">A learning project, 2026. Generated code is for study. Check it before you run it anywhere that matters.</span></div></footer>
+</body></html>

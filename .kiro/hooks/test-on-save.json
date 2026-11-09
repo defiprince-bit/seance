@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Run related tests on save",
+      "description": "After the agent saves a TypeScript file under src/, server/ or api/, run the Vitest suites affected by uncommitted changes, including fast-check property tests. Failures go back to the agent.",
+      "trigger": "PostFileSave",
+      "matcher": "(^|[\\\\/])(src|server|api|tests)[\\\\/].*\\.(ts|tsx)$",
+      "action": {
+        "type": "command",
+        "command": "npx vitest run --changed --passWithNoTests --reporter=dot"
+      },
+      "timeout": 180
+    }
+  ]
+}

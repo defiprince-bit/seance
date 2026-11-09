@@ -1,0 +1,22 @@
+# --- Kiroween rule: the .kiro folder MUST be committed. Never ignore it. ---
+!.kiro/
+!.kiro/**
+
+# dependencies and builds
+node_modules/
+dist/
+coverage/
+.vite/
+playwright-report/
+test-results/
+
+# secrets (values live in Vercel / Render env vars only)
+.env
+.env.*
+!.env.example
+
+# platform and editor noise
+.vercel/
+.DS_Store
+Thumbs.db
+*.log

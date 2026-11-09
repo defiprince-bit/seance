@@ -1,0 +1,66 @@
+/* Séance design tokens: source of truth (mirrored in seance-steering.md) */
+:root{
+  /* surfaces */
+  --void:#0A090C;        /* app background */
+  --crypt:#121015;       /* panes, cards */
+  --altar:#1A171E;       /* raised: inputs, menus, active rows */
+  --terminal:#0D110E;    /* CRT code + run output background */
+  --seam:#2B2631;        /* hairline borders */
+  --seam-strong:#3D3645; /* hover borders, dividers on raised */
+  /* text */
+  --bone:#EDE6D8;        /* primary text, 15.2:1 on crypt */
+  --ash:#B3A999;         /* secondary text, 8.1:1 */
+  --dust:#8E8578;        /* footnotes, line numbers, 5.2:1 */
+  /* accents */
+  --candle:#E9A957;      /* primary action, active line, focus */
+  --candle-deep:#B9772F; /* pressed */
+  --candle-ink:#1A1006;  /* text on candle, 9.2:1 */
+  --candle-veil:rgba(233,169,87,.10); /* active-line wash */
+  --phosphor:#9FDDB0;    /* dead-language code text, success */
+  --phosphor-dim:#74A983;/* code comments, sequence area */
+  --ecto:#C7C0E6;        /* the ghost's voice: narration accents */
+  --danger:#EE8E7E;      /* errors */
+  /* type */
+  --font-display:"Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --font-body:"DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-code:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-crt:"VT323", "IBM Plex Mono", monospace; /* run output + tiny labels only */
+  --text-xs:12px; --text-sm:13px; --text-base:14px; --text-md:16px;
+  --text-lg:20px; --text-xl:28px; --text-2xl:40px; --text-hero:56px;
+  --leading-tight:1.1; --leading-snug:1.3; --leading-body:1.55; --leading-code:20px;
+  /* spacing (4px base) */
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px; --s-6:24px;
+  --s-8:32px; --s-10:40px; --s-14:56px; --s-20:80px;
+  /* radii */
+  --r-xs:4px; --r-sm:8px; --r-md:12px; --r-lg:20px; --r-pill:999px;
+  /* elevation + glow */
+  --shadow-pane:inset 0 1px 0 rgba(255,255,255,.03), 0 24px 60px -28px rgba(0,0,0,.7);
+  --shadow-pop:0 18px 50px -12px rgba(0,0,0,.75);
+  --glow-candle:0 0 0 1px rgba(233,169,87,.40), 0 0 28px rgba(233,169,87,.18);
+  --glow-phosphor:0 0 6px rgba(159,221,176,.35);  /* text-shadow on code */
+  --ring:0 0 0 2px var(--void), 0 0 0 4px var(--candle);
+  /* motion */
+  --d-instant:80ms; --d-fast:160ms; --d-base:240ms; --d-slow:420ms;
+  --d-glide:600ms; --d-breathe:4800ms; --stagger-line:40ms;
+  --ease-out:cubic-bezier(.2,.7,.2,1);
+  --ease-glide:cubic-bezier(.65,0,.35,1);
+  --ease-in:cubic-bezier(.5,0,.75,0);
+}
+/* v2 landing additions (Douglas review, 9 Nov 2026): playful spooky landing */
+:root{
+  --font-spooky:"Jolly Lodger", "Instrument Serif", Georgia, serif; /* landing display + wordmark only */
+  --pumpkin:#FF4A2E;      /* accent word, round CTA icon, wordmark. 4.6:1 on --charcoal */
+  --pumpkin-deep:#D9361D; /* pressed */
+  --pumpkin-glow:rgba(255,106,48,.45);
+  --charcoal:#242428;     /* landing card surface */
+  --charcoal-raised:#2E2E34; /* pills, tiles, chips hover */
+  --charcoal-line:#45454D;   /* outline chips / pill borders */
+  --card-text:#F6F1EA;    /* headline on charcoal */
+  --card-body:#C9C4BC;    /* body on charcoal, 8.9:1 */
+  --card-muted:#9A958E;   /* footnotes on charcoal, 5.2:1 */
+  --web:#F4EADF;          /* cobweb strokes, used at .7 opacity */
+  --backdrop:radial-gradient(120% 90% at 100% 0%,#D8622F 0%,#B24A26 28%,transparent 62%),radial-gradient(90% 80% at 0% 100%,#C25A2C 0%,#8E3E22 30%,transparent 65%),linear-gradient(160deg,#5E5752 0%,#6B4A3A 45%,#9C4524 100%);
+  --vignette:radial-gradient(130% 100% at 50% 50%,transparent 55%,rgba(20,10,6,.55) 100%);
+  --r-card:24px; --r-tile:22px;
+  --d-sway:7000ms; --d-float:6000ms;
+}

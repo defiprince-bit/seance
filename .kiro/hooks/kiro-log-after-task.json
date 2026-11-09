@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Log the task and sync docs",
+      "description": "After each spec task, keep a running build log for the 'How we used Kiro' write-up and keep README accurate. Uses agent credits.",
+      "trigger": "PostTaskExecution",
+      "action": {
+        "type": "agent",
+        "prompt": "A spec task just finished. 1) Append one entry to docs/kiro-log.md (create it if missing) with: today's date, spec name and task number, a one-sentence summary of what changed, the files touched, whether any property-based test failed and what it caught, and any place you deviated from design.md and why. Keep it under 8 lines. 2) If the change affects how to run, configure or try the app, update the matching section of README.md (Try it, Run locally, Environment variables). Do not touch any other file and do not add secrets."
+      }
+    }
+  ]
+}

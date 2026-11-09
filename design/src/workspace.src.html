@@ -1,0 +1,299 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sales total · Séance</title>
+<!--HEAD-->
+<style>
+.app{position:relative;z-index:1;height:100vh;min-height:720px;display:flex;flex-direction:column}
+.topbar .div{width:1px;height:20px;background:var(--seam)}
+.title{font:italic 400 19px/1 var(--font-display);color:var(--bone);background:none;border:0;padding:4px 6px;border-radius:6px}
+.title:hover{background:rgba(255,255,255,.04)}
+.lang-trigger{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 10px 0 12px;border-radius:var(--r-sm);border:1px solid var(--seam-strong);background:var(--crypt);cursor:pointer;font-size:var(--text-sm);color:var(--ash);text-decoration:none}
+.lang-trigger b{font:italic 400 17px/1 var(--font-display);color:var(--bone)}
+.lang-trigger:hover{border-color:var(--ash)}
+/* task bar */
+.taskbar{display:flex;gap:var(--s-3);padding:var(--s-4) var(--s-6) var(--s-3)}
+.task{flex:1;display:flex;align-items:center;gap:var(--s-3);min-height:52px;padding:0 8px 0 16px;border-radius:var(--r-md);border:1px solid var(--seam-strong);background:var(--altar);transition:border-color var(--d-fast) var(--ease-out),box-shadow var(--d-fast) var(--ease-out)}
+.task:focus-within{border-color:var(--candle);box-shadow:var(--glow-candle)}
+.task svg.ar{flex:none;width:18px;height:18px}
+.task input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--bone);font:400 var(--text-md)/1.4 var(--font-body)}
+.task input::placeholder{color:var(--dust)}
+.file{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:var(--r-sm);background:var(--crypt);border:1px solid var(--seam);font:400 12px/1 var(--font-code);color:var(--ash)}
+.file svg{width:14px;height:14px}
+.summon{height:52px;padding:0 20px;font-size:var(--text-base);border-radius:var(--r-md)}
+/* grid */
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:var(--s-3);padding:0 var(--s-6) var(--s-5)}
+.col{display:flex;flex-direction:column;gap:var(--s-3);min-height:0}
+.col>.pane{flex:1}
+/* code pane */
+.codewrap{flex:1;min-height:0;overflow:auto;position:relative;padding:10px 0 14px}
+.code{position:relative;font:400 13px/19px var(--font-code);color:var(--phosphor);text-shadow:var(--glow-phosphor);counter-reset:ln}
+.ln{position:relative;display:block;white-space:pre;padding:0 16px 0 58px;cursor:pointer;transition:background var(--d-fast) var(--ease-out)}
+.ln::before{content:attr(data-n);position:absolute;left:14px;width:26px;text-align:right;color:var(--dust);text-shadow:none}
+.ln:hover{background:rgba(255,255,255,.025)}
+.ln.on{background:var(--candle-veil)}
+.ln.on::before{color:var(--candle)}
+.ln.done{opacity:.72}
+.code .kw{color:#D4F5DC}.code .lit{color:var(--candle)}.code .cm{color:var(--phosphor-dim);font-style:italic}.code .pic{color:var(--ecto)}
+.planchette{position:absolute;left:40px;top:0;width:14px;height:19px;display:grid;place-items:center;transition:transform var(--d-glide) var(--ease-glide);z-index:2;pointer-events:none}
+.planchette svg{width:14px;height:14px;filter:drop-shadow(0 0 6px rgba(233,169,87,.6))}
+.bracket{position:absolute;left:54px;width:2px;background:var(--candle);border-radius:2px;transition:transform var(--d-glide) var(--ease-glide),height var(--d-glide) var(--ease-glide);top:0}
+.seg{display:inline-flex;border:1px solid var(--seam);border-radius:var(--r-sm);padding:2px;gap:2px;background:var(--void)}
+.seg button{height:24px;padding:0 9px;border-radius:6px;border:0;background:none;color:var(--dust);font-size:var(--text-xs);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--altar);color:var(--bone)}
+/* ghost */
+.ghost-list{flex:1;min-height:0;overflow:auto;padding:var(--s-3) var(--s-4) var(--s-4);display:flex;flex-direction:column;gap:var(--s-2)}
+.utt{position:relative;padding:12px 14px 12px 16px;border-radius:var(--r-sm);border:1px solid transparent;cursor:pointer;transition:background var(--d-base) var(--ease-out),border-color var(--d-base) var(--ease-out)}
+.utt .ref{font:400 15px/1 var(--font-crt);color:var(--dust);letter-spacing:.04em}
+.utt p{margin:4px 0 0;color:var(--ash)}
+.utt q{display:block;font:italic 400 18px/1.3 var(--font-display);color:var(--bone);quotes:"“" "”";margin-top:6px}
+.utt:hover{background:rgba(255,255,255,.025)}
+.utt.on{background:var(--altar);border-color:var(--seam-strong)}
+.utt.on::before{content:"";position:absolute;left:-1px;top:10px;bottom:10px;width:2px;background:var(--candle);border-radius:2px}
+.utt.on .ref{color:var(--candle)}
+.utt.on p{color:var(--bone)}
+.utt.ahead{cursor:default;opacity:.55}
+.utt.ahead p{color:var(--dust);font-style:italic}
+.speaking::after{content:"▍";color:var(--ecto);margin-left:2px;animation:caret 1.06s steps(1) infinite}
+.ghost-foot{border-top:1px solid var(--seam);padding:10px 12px;display:flex;flex-direction:column;gap:10px;flex:none}
+.transport{display:flex;align-items:center;gap:6px}
+.transport .step{margin-left:auto;font-size:var(--text-xs);color:var(--dust)}
+.ask{display:flex;align-items:center;gap:8px;height:38px;padding:0 6px 0 12px;border-radius:var(--r-sm);background:var(--altar);border:1px solid var(--seam)}
+.ask:focus-within{border-color:var(--candle)}
+.ask input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--bone);font:inherit;font-size:var(--text-sm)}
+.ask input::placeholder{color:var(--dust)}
+.who{display:inline-flex;align-items:center;gap:8px}
+.who svg{width:16px;height:16px}
+/* python */
+.py{flex:1;min-height:0;overflow:auto;padding:10px 0;font:400 13px/20px var(--font-code);color:var(--bone)}
+.py .ln{padding-right:56px}
+.py .ln .map{position:absolute;right:12px;font:400 14px/20px var(--font-crt);color:var(--dust);opacity:0;transition:opacity var(--d-fast) var(--ease-out)}
+.py .ln:hover .map,.py .ln.on .map{opacity:1}
+.py .ln.on .map{color:var(--candle)}
+.py .k{color:var(--candle)}.py .s{color:var(--phosphor)}.py .c{color:var(--dust);font-style:italic}.py .f{color:var(--ecto)}
+.note{margin:0 var(--s-4) var(--s-4);padding:12px 14px;border-radius:var(--r-sm);border:1px dashed var(--seam-strong);color:var(--ash);font-size:var(--text-sm)}
+.note b{font-weight:500;color:var(--bone)}
+/* output */
+.out{flex:none;height:208px}
+.term{flex:1;padding:12px 16px;font:400 18px/22px var(--font-crt);color:var(--phosphor);text-shadow:var(--glow-phosphor);overflow:auto}
+.term div{white-space:pre}
+.term .dim{color:var(--phosphor-dim)}
+.term .res{color:#D4F5DC}
+.agree{display:flex;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid var(--seam);font-size:var(--text-xs);color:var(--ash);flex:none}
+.agree b{color:var(--phosphor);font-weight:500}
+/* tabs (mobile/tablet) */
+.tabs{display:none}
+.caption{display:none}
+/* states reference */
+.states{position:relative;z-index:1;padding:var(--s-14) var(--s-6) var(--s-20);border-top:1px solid var(--seam)}
+.states h2{font:italic 400 var(--text-xl)/1 var(--font-display);margin:var(--s-3) 0 var(--s-8)}
+.states .row{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-4)}
+.state-body{padding:var(--s-6);display:flex;flex-direction:column;gap:var(--s-3);min-height:260px}
+.state-body h4{margin:0;font:italic 400 var(--text-lg)/1.2 var(--font-display)}
+.state-body p{margin:0;color:var(--ash)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
+.sk{height:12px;border-radius:3px;background:rgba(159,221,176,.14);transform-origin:left}
+.sk.s2{width:72%}.sk.s3{width:56%}.sk.s4{width:84%}.sk.s5{width:40%}
+.sk{animation:lineIn var(--d-slow) var(--ease-out) both}
+.err-line{font:400 12.5px/19px var(--font-code);border-radius:var(--r-sm);padding:10px 12px;color:var(--phosphor)}
+.err-line .x{background:rgba(238,142,126,.14);color:var(--danger);text-decoration:underline wavy rgba(238,142,126,.6);text-underline-offset:3px}
+.err-msg{color:var(--danger)!important}
+/* responsive */
+@media (max-width:1199px){
+ .grid{grid-template-columns:1.2fr 1fr}
+ .grid>.col:nth-child(2),.grid>.col:nth-child(3){grid-column:2;grid-row:1}
+ .grid[data-tab="ghost"] .col-py,.grid[data-tab="python"] .col-ghost,.grid[data-tab="output"] .col-ghost{display:none}
+ .grid[data-tab="ghost"] .col-py{display:none}
+ .grid:not([data-tab="output"]) .col-py .out{display:none}
+ .grid[data-tab="output"] .col-py .pane:first-child{display:none}
+ .grid[data-tab="output"] .col-py .out{flex:1;height:auto}
+ .tabs{display:flex;justify-content:flex-end;margin:0 var(--s-6) var(--s-3)}
+ .tabs [data-t="code"]{display:none}
+}
+@media (max-width:767px){
+ .topbar{padding:0 var(--s-4);gap:var(--s-3)} .topbar .div,.topbar .title,.topbar .pill,.topbar .end{display:none}
+ .lang-trigger span.lab{display:none}
+ .taskbar{padding:var(--s-3) var(--s-4) var(--s-2)}
+ .task{min-height:46px;padding:0 6px 0 12px} .task input{font-size:15px} .task .file{display:none}
+ .summon{height:46px;padding:0 14px} .summon .kbd,.summon .lab{display:none}
+ .tabs{display:flex;justify-content:stretch;margin:0 var(--s-4) var(--s-2)} .tabs .seg{width:100%} .tabs button{flex:1;height:32px;font-size:var(--text-sm)}
+ .tabs [data-t="code"]{display:block}
+ .grid{display:block;padding:0 var(--s-4) 0;position:relative}
+ .grid .col{height:100%}
+ .grid>.col{display:none}
+ .grid[data-tab="code"] .col-code,.grid[data-tab="ghost"] .col-ghost,.grid[data-tab="python"] .col-py,.grid[data-tab="output"] .col-py{display:flex}
+ .code{font-size:12px;line-height:19px} .ln{padding-left:50px} .ln::before{left:6px} .planchette{left:32px} .bracket{left:46px}
+ .codewrap{padding-bottom:170px}
+ .grid[data-tab="code"]~.caption{display:block}
+ .caption{position:fixed;left:12px;right:12px;bottom:12px;z-index:10;background:var(--altar);border:1px solid var(--seam-strong);border-radius:var(--r-md);box-shadow:var(--shadow-pop);padding:12px 14px}
+ .py .ln .map{display:none} .py .ln{padding-right:16px}
+ .caption .top svg{width:16px;height:16px;flex:none}
+ .pane-h .meta,.col-code .pane-h .seg{display:none}
+ .caption .top{display:flex;align-items:center;gap:8px;font:400 15px/1 var(--font-crt);color:var(--candle)}
+ .caption .top .sp{flex:1}
+ .caption q{display:block;font:italic 400 17px/1.3 var(--font-display);color:var(--bone);margin:8px 0 4px}
+ .caption p{margin:0;color:var(--ash);font-size:var(--text-sm)}
+ .states .row{grid-template-columns:1fr}
+ .states{padding:var(--s-10) var(--s-4)}
+}
+</style></head><body>
+<div class="app">
+<header class="topbar has-web"><span class="topbar-web" aria-hidden="true">{{WEB}}</span>
+  <a class="brand" href="landing.html" aria-label="Séance home">{{MARK}}<b>Séance</b></a>
+  <span class="div"></span>
+  <button class="title" aria-label="Rename session">Sales total</button>
+  <span class="spacer"></span>
+  <a class="lang-trigger" href="picker.html" aria-haspopup="dialog"><span class="lab">Spirit</span><b>COBOL</b><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4"/></svg></a>
+  <span class="pill" role="status"><i></i>Spirit present</span>
+  <button class="btn btn-ghost end">End séance</button>
+</header>
+
+<form class="taskbar" onsubmit="return false">
+  <label class="task">
+    <svg class="ar" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="#E9A957" stroke-width="1.5"/></svg>
+    <span class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Your task</span>
+    <input value="Parse sales.csv and total the sales column" placeholder="Describe a task in plain English…">
+    <span class="file"><svg viewBox="0 0 16 16" fill="none"><path d="M4 2h5l3 3v9H4z" stroke="currentColor" stroke-width="1.2"/></svg>sales.csv · 4 rows</span>
+  </label>
+  <button class="btn btn-candle summon"><span class="lab">Summon again</span><span class="kbd">⌘⏎</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="mob-ic"><path d="M13 3v5a2 2 0 0 1-2 2H3m0 0 3-3m-3 3 3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+</form>
+
+<div class="tabs" role="tablist" aria-label="Panels"><div class="seg">
+  <button data-t="code" aria-pressed="true">Code</button><button data-t="ghost" aria-pressed="false">Ghost</button><button data-t="python" aria-pressed="false">Python</button><button data-t="output" aria-pressed="false">Output</button>
+</div></div>
+
+<main class="grid" data-tab="code" id="grid">
+  <div class="col col-code">
+    <section class="pane" aria-label="COBOL program">
+      <div class="pane-h"><h3>COBOL</h3><span class="meta">sales-total.cbl · 37 lines</span><span class="spacer"></span>
+        <div class="seg" role="group" aria-label="Column view"><button aria-pressed="true">Code area</button><button aria-pressed="false">Cols 1–7</button></div>
+        <button class="icon-btn" aria-label="Copy COBOL"><svg viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10" stroke="currentColor" stroke-width="1.2"/></svg></button>
+      </div>
+      <div class="codewrap crt" id="codewrap">
+        <div class="code" id="code"><div class="bracket" id="bracket"></div><div class="planchette" id="planchette" aria-hidden="true">{{MARK}}</div></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="col col-ghost">
+    <section class="pane" aria-label="The ghost's explanation">
+      <div class="pane-h"><h3 class="who">{{MARK}} The ghost</h3><span class="meta">explains line by line</span></div>
+      <div class="ghost-list" id="ghost" aria-live="polite"></div>
+      <div class="ghost-foot">
+        <div class="transport">
+          <button class="icon-btn" id="prev" aria-label="Previous explanation"><svg viewBox="0 0 16 16" fill="none"><path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="1.5"/></svg></button>
+          <button class="btn" style="height:30px" aria-label="Pause narration"><svg width="12" height="12" viewBox="0 0 12 12"><rect x="2.5" y="2" width="2.4" height="8" rx=".6" fill="currentColor"/><rect x="7.1" y="2" width="2.4" height="8" rx=".6" fill="currentColor"/></svg>Pause</button>
+          <button class="icon-btn" id="next" aria-label="Next explanation"><svg viewBox="0 0 16 16" fill="none"><path d="m6 3 5 5-5 5" stroke="currentColor" stroke-width="1.5"/></svg></button>
+          <span class="step" id="stepLabel">6 of 8</span>
+        </div>
+        <label class="ask"><input placeholder="Ask about these lines…" aria-label="Ask the ghost a question"><button class="icon-btn" aria-label="Ask"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5"/></svg></button></label>
+      </div>
+    </section>
+  </div>
+
+  <div class="col col-py">
+    <section class="pane" aria-label="Python translation">
+      <div class="pane-h"><h3>Brought back</h3><span class="meta">Python 3</span><span class="spacer"></span>
+        <button class="icon-btn" aria-label="Copy Python"><svg viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10" stroke="currentColor" stroke-width="1.2"/></svg></button></div>
+      <div class="py" id="py"></div>
+      <div class="note"><b>Translator’s note.</b> COBOL keeps money as exact decimals (<span class="mono">PIC 9(7)V99</span>). Python floats don’t, so this uses <span class="mono">Decimal</span>.</div>
+    </section>
+    <section class="pane out" aria-label="Run output">
+      <div class="pane-h"><h3>Output</h3><span class="spacer"></span><div class="seg" role="group" aria-label="Which run"><button aria-pressed="true">COBOL</button><button aria-pressed="false">Python</button></div></div>
+      <div class="term crt" role="log">
+        <div class="dim">› summon sales-total.cbl</div>
+        <div class="dim">› compiled, 0 warnings</div>
+        <div class="res">TOTAL SALES:      5871.50</div>
+        <div class="dim">› exit 0</div>
+      </div>
+      <div class="agree"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="m3 7.5 2.5 2.5L11 4" stroke="#9FDDB0" stroke-width="1.6"/></svg><b>Python agrees.</b> Both runs print 5871.50.</div>
+    </section>
+  </div>
+</main>
+<aside class="caption" aria-live="polite">
+  <div class="top">{{MARK}}<span>LINES 27–29</span><span class="sp"></span><button class="icon-btn" aria-label="Previous"><svg viewBox="0 0 16 16" fill="none"><path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="1.5"/></svg></button><button class="icon-btn" aria-label="Next"><svg viewBox="0 0 16 16" fill="none"><path d="m6 3 5 5-5 5" stroke="currentColor" stroke-width="1.5"/></svg></button></div>
+  <q>We had no split(). We had UNSTRING, and we liked it.</q>
+  <p>It cuts each line at the comma and pours the pieces into two boxes: region, then amount.</p>
+</aside>
+</div>
+
+<section class="states" aria-label="State reference">
+  <span class="eyebrow">Design reference · workspace states</span>
+  <h2>Before, during, and when it goes wrong</h2>
+  <div class="row">
+    <div class="pane"><div class="pane-h"><h3>Empty</h3><span class="meta">no task yet</span></div><div class="state-body">
+      <h4>The candles are lit.</h4><p>Describe something you’d normally do in Python or a spreadsheet. The ghost will answer in COBOL.</p>
+      <div class="chips"><span class="chip">Total the sales in a CSV</span><span class="chip">Compound interest for 10 years</span><span class="chip">Sort a list of names</span><span class="chip">Payroll with overtime</span></div>
+    </div></div>
+    <div class="pane"><div class="pane-h"><h3>Summoning</h3><span class="spacer"></span><span class="pill is-summoning"><i></i>Summoning</span></div><div class="state-body crt" style="background:var(--terminal)">
+      <p style="font:400 18px/1.2 var(--font-crt);color:var(--phosphor)">› The ghost is writing. COBOL takes its time.</p>
+      <div class="sk" style="animation-delay:0ms"></div><div class="sk s2" style="animation-delay:40ms"></div><div class="sk s3" style="animation-delay:80ms"></div><div class="sk s4" style="animation-delay:120ms"></div><div class="sk s5" style="animation-delay:160ms"></div>
+      <p class="foot" style="margin-top:auto">Lines appear as they’re written. Press Esc to stop.</p>
+    </div></div>
+    <div class="pane"><div class="pane-h"><h3>Error</h3><span class="spacer"></span><span class="pill is-error"><i></i>Didn’t compile</span></div><div class="state-body">
+      <h4>The spirit lost the thread on line 27.</h4>
+      <div class="err-line crt" style="background:var(--terminal)">27  <span class="x">UNSTRNG</span> SALES-LINE DELIMITED BY ","</div>
+      <p class="err-msg">Unknown word UNSTRNG. Did you mean UNSTRING?</p>
+      <div class="chips"><button class="btn btn-candle">Let the ghost fix it</button><button class="btn">Edit the task</button></div>
+    </div></div>
+  </div>
+</section>
+
+<script>
+const COBOL=[
+"IDENTIFICATION DIVISION.","PROGRAM-ID. SALES-TOTAL.","ENVIRONMENT DIVISION.","INPUT-OUTPUT SECTION.","FILE-CONTROL.",
+"    SELECT SALES-FILE ASSIGN TO \"sales.csv\"","        ORGANIZATION IS LINE SEQUENTIAL.","DATA DIVISION.","FILE SECTION.","FD  SALES-FILE.",
+"01  SALES-LINE          PIC X(80).","WORKING-STORAGE SECTION.","01  WS-EOF              PIC X VALUE \"N\".","01  WS-REGION           PIC X(20).",
+"01  WS-AMOUNT-TXT       PIC X(12).","01  WS-AMOUNT           PIC 9(7)V99.","01  WS-TOTAL            PIC 9(9)V99 VALUE ZERO.","01  WS-TOTAL-OUT        PIC Z(8)9.99.",
+"PROCEDURE DIVISION.","    OPEN INPUT SALES-FILE","    *> first read skips the header row","    READ SALES-FILE AT END MOVE \"Y\" TO WS-EOF END-READ",
+"    PERFORM UNTIL WS-EOF = \"Y\"","        READ SALES-FILE","            AT END MOVE \"Y\" TO WS-EOF","            NOT AT END",
+"                UNSTRING SALES-LINE DELIMITED BY \",\"","                    INTO WS-REGION WS-AMOUNT-TXT","                END-UNSTRING",
+"                COMPUTE WS-AMOUNT = FUNCTION NUMVAL(WS-AMOUNT-TXT)","                ADD WS-AMOUNT TO WS-TOTAL","        END-READ","    END-PERFORM",
+"    CLOSE SALES-FILE","    MOVE WS-TOTAL TO WS-TOTAL-OUT","    DISPLAY \"TOTAL SALES: \" WS-TOTAL-OUT","    STOP RUN."];
+const KW=/(?<![\w-])(IDENTIFICATION|ENVIRONMENT|DATA|PROCEDURE|DIVISION|PROGRAM-ID|INPUT-OUTPUT|FILE-CONTROL|WORKING-STORAGE|FILE|SECTION|SELECT|ASSIGN|TO|ORGANIZATION|IS|LINE|SEQUENTIAL|FD|PIC|VALUE|ZERO|OPEN|INPUT|READ|AT|END|NOT|MOVE|PERFORM|UNTIL|UNSTRING|DELIMITED|BY|INTO|END-UNSTRING|COMPUTE|FUNCTION|NUMVAL|ADD|END-READ|END-PERFORM|CLOSE|DISPLAY|STOP|RUN)(?![\w-])/g;
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+function hl(s){if(/^\s*\*>/.test(s))return '<span class="cm">'+esc(s)+'</span>';
+  return esc(s).split(/("[^"]*")/).map((p,i)=>i%2?'<span class="lit">'+p+'</span>':p.replace(/(PIC\s+)([^\s.]+(?:\.\d+)?)/,'$1\u0000$2\u0001').replace(KW,'<span class="kw">$1</span>').replace('\u0000','<span class="pic">').replace('\u0001','</span>')).join('');}
+const code=document.getElementById('code');
+COBOL.forEach((l,i)=>{const d=document.createElement('span');d.className='ln';d.dataset.n=i+1;d.innerHTML=hl(l)||' ';code.appendChild(d)});
+const G=[
+ {r:[1,2],q:"Every program introduced itself first.",p:"The IDENTIFICATION DIVISION is a name tag. Ours is SALES-TOTAL."},
+ {r:[3,7],p:"Here we tell the machine where the file lives and that it’s plain text, one record per line."},
+ {r:[8,18],q:"Before any work, you declare every box and its exact size.",p:"PIC 9(7)V99 means seven digits, an invisible decimal point, then two more. Money to the penny, with no rounding surprises."},
+ {r:[19,22],p:"Open the file, then read once and throw it away. That first line is the header."},
+ {r:[23,26],p:"Now the loop: keep reading until the file runs dry. AT END is how COBOL notices there’s nothing left."},
+ {r:[27,29],q:"We had no split(). We had UNSTRING, and we liked it.",p:"For every remaining line, cut at the comma and pour the pieces into two boxes: region, then amount as text."},
+ {r:[30,31],p:"Turn the text into a number with NUMVAL, then add it to the running total."},
+ {r:[32,37],p:"Close the file, dress the total up for printing, and say goodbye."}];
+const PY=[["<span class=\"k\">from</span> decimal <span class=\"k\">import</span> Decimal",[16,17]],["<span class=\"k\">import</span> csv",[5,7]],["",null],
+ ["total = <span class=\"f\">Decimal</span>(<span class=\"s\">\"0\"</span>)",[17,17]],["<span class=\"k\">with</span> <span class=\"f\">open</span>(<span class=\"s\">\"sales.csv\"</span>, newline=<span class=\"s\">\"\"</span>) <span class=\"k\">as</span> f:",[19,20]],
+ ["    <span class=\"k\">for</span> row <span class=\"k\">in</span> csv.<span class=\"f\">DictReader</span>(f):",[22,29]],["        <span class=\"c\"># header + commas handled</span>",[22,29]],
+ ["        total += <span class=\"f\">Decimal</span>(row[<span class=\"s\">\"amount\"</span>])",[30,31]],["",null],
+ ["<span class=\"f\">print</span>(<span class=\"s\">f\"TOTAL SALES: {total:&gt;12.2f}\"</span>)",[35,36]]];
+const py=document.getElementById('py');
+PY.forEach(([h,m],i)=>{const d=document.createElement('span');d.className='ln';d.dataset.n=i+1;d.innerHTML=(h||' ')+(m?'<span class="map">↔ '+(m[0]===m[1]?m[0]:m[0]+'–'+m[1])+'</span>':'');d.dataset.m=m?m.join(','):'';py.appendChild(d)});
+const ghost=document.getElementById('ghost');let cur=5;
+function render(){
+  ghost.innerHTML='';G.forEach((g,i)=>{const d=document.createElement('div');d.className='utt'+(i===cur?' on':i>cur?' ahead':'');
+    const ref='LINES '+g.r[0]+'–'+g.r[1];
+    d.innerHTML='<div class="ref">'+ref+'</div>'+(i>cur?'<p>The ghost hasn’t reached line '+g.r[0]+' yet.</p>':(g.q?'<q>'+g.q+'</q>':'')+'<p'+(i===cur?' class="speaking"':'')+'>'+g.p+'</p>');
+    if(i<=cur)d.onclick=()=>{cur=i;render()};ghost.appendChild(d)});
+  const [a,b]=G[cur].r;const lines=code.querySelectorAll('.ln');
+  lines.forEach((l,i)=>{l.classList.toggle('on',i+1>=a&&i+1<=b);l.classList.toggle('done',i+1<a)});
+  const lh=lines[0].offsetHeight,top=lines[0].offsetTop;
+  document.getElementById('planchette').style.transform='translateY('+(top+(a-1)*lh)+'px)';
+  const br=document.getElementById('bracket');br.style.transform='translateY('+(top+(a-1)*lh)+'px)';br.style.height=((b-a+1)*lh)+'px';
+  py.querySelectorAll('.ln').forEach(l=>{const m=l.dataset.m.split(',').map(Number);l.classList.toggle('on',!!l.dataset.m&&m[0]<=b&&m[1]>=a&&!(m[0]<a&&m[1]<a))});
+  const on=ghost.querySelector('.utt.on');if(on){ghost.scrollTop=on.offsetTop-ghost.offsetTop-ghost.clientHeight*0.25}
+  document.getElementById('stepLabel').textContent=(cur+1)+' of '+G.length;
+  const w=document.getElementById('codewrap');const t=top+(a-1)*lh-w.clientHeight*0.3;w.scrollTo({top:Math.max(0,t),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+}
+document.getElementById('prev').onclick=()=>{cur=Math.max(0,cur-1);render()};
+document.getElementById('next').onclick=()=>{cur=Math.min(G.length-1,cur+1);render()};
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.key==='j')document.getElementById('next').click();if(e.key==='k')document.getElementById('prev').click()});
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-pressed',x===b));document.getElementById('grid').dataset.tab=b.dataset.t});
+const qs=new URLSearchParams(location.search);if(qs.get('tab')){const b=document.querySelector('.tabs [data-t="'+qs.get('tab')+'"]');b&&b.click()}
+if(innerWidth>=768&&innerWidth<1200&&!qs.get('tab')){document.querySelector('.tabs [data-t="ghost"]').click()}
+if(qs.get('states')){document.querySelector('.app').style.display='none'}
+document.fonts.ready.then(render);render();
+</script>
+<style>.mob-ic{display:none}@media (max-width:767px){.mob-ic{display:block}}</style>
+</body></html>

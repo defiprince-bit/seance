@@ -1,0 +1,114 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Choose a spirit · Séance</title>
+<!--HEAD-->
+<style>
+.backdrop{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column}
+.ghostui{flex:1;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:12px;padding:16px 24px 20px}
+.ghostui div{border:1px solid var(--seam);border-radius:var(--r-md);background:var(--crypt)}
+.ghostui .t{grid-column:1/-1;height:52px;background:var(--altar)}
+.scrim{position:fixed;inset:0;z-index:2;background:rgba(6,5,8,.72);backdrop-filter:blur(3px);animation:riseIn var(--d-base) var(--ease-out) both}
+.dialog{position:fixed;z-index:3;left:50%;top:50%;width:min(1080px,calc(100vw - 64px));transform:translate(-50%,-50%);background:var(--crypt);border:1px solid var(--seam-strong);border-radius:var(--r-lg);box-shadow:var(--shadow-pop);overflow:hidden}
+.dialog::before{content:"";position:absolute;left:50%;top:-220px;width:700px;height:400px;transform:translateX(-50%);background:radial-gradient(closest-side,rgba(233,169,87,.12),transparent);pointer-events:none;animation:breathe var(--d-breathe) ease-in-out infinite}
+.dh{position:relative;display:flex;align-items:start;gap:var(--s-4);padding:var(--s-8) var(--s-8) var(--s-6)}
+.dh h1{margin:var(--s-2) 0 var(--s-2);font:400 var(--text-xl)/1.1 var(--font-display)} .dh h1 em{color:var(--candle)}
+.dh p{margin:0;color:var(--ash);max-width:520px}
+.cards{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-4);padding:0 var(--s-8)}
+.card{position:relative;display:flex;flex-direction:column;gap:var(--s-3);padding:var(--s-5);border-radius:var(--r-md);border:1px solid var(--seam);background:var(--void);cursor:pointer;text-align:left;transition:border-color var(--d-fast) var(--ease-out),transform var(--d-base) var(--ease-out),background var(--d-fast) var(--ease-out)}
+.card:hover{border-color:var(--seam-strong);transform:translateY(-2px)}
+.card[aria-checked=true]{border-color:var(--candle);box-shadow:var(--glow-candle);background:linear-gradient(180deg,rgba(233,169,87,.06),transparent 50%),var(--void)}
+.card .top{display:flex;align-items:baseline;justify-content:space-between}
+.card h2{margin:0;font:italic 400 30px/1 var(--font-display);color:var(--bone)}
+.card .yr{font:400 18px/1 var(--font-crt);color:var(--dust)}
+.card .ep{color:var(--ecto);font-size:var(--text-sm);margin-top:-6px}
+.card .desc{margin:0;color:var(--ash);font-size:var(--text-sm)}
+.card pre{margin:0;padding:10px 12px;border-radius:var(--r-sm);border:1px solid var(--seam);font:400 11.5px/18px var(--font-code);color:var(--phosphor);text-shadow:var(--glow-phosphor);overflow:hidden;white-space:pre}
+.card pre .kw{color:#D4F5DC}.card pre .lit{color:var(--candle)}
+.traits{display:flex;flex-wrap:wrap;gap:6px}
+.traits span{height:22px;display:inline-flex;align-items:center;padding:0 8px;border-radius:var(--r-pill);border:1px solid var(--seam);font-size:var(--text-xs);color:var(--ash)}
+.radio{position:absolute;top:var(--s-5);right:var(--s-5);width:18px;height:18px;border-radius:50%;border:1.5px solid var(--seam-strong);display:none}
+.card .sel{display:none;align-items:center;gap:6px;font-size:var(--text-xs);color:var(--candle);font-weight:500}
+.card[aria-checked=true] .sel{display:inline-flex}
+.card .ep{display:flex;justify-content:space-between;align-items:center}
+.dialect{margin-top:auto;display:flex;flex-direction:column;gap:6px}
+.dialect label{font-size:var(--text-xs);color:var(--dust)}
+.select{display:flex;align-items:center;justify-content:space-between;height:34px;padding:0 10px;border-radius:var(--r-sm);border:1px solid var(--seam);background:var(--altar);font-size:var(--text-sm);color:var(--bone)}
+.card.rest{cursor:default;border-style:dashed;background:transparent;justify-content:center;align-items:start}
+.card.rest:hover{transform:none;border-color:var(--seam)}
+.card.rest h2{font-size:22px;color:var(--ash)}
+.df{position:relative;display:flex;align-items:center;gap:var(--s-3);padding:var(--s-6) var(--s-8);margin-top:var(--s-6);border-top:1px solid var(--seam)}
+.df .foot{flex:1}
+.close{position:absolute;top:var(--s-6);right:var(--s-6)}
+.handle{display:none}
+@media (max-width:1100px){.cards{grid-template-columns:1fr 1fr}.card.rest{display:none}}
+@media (max-width:767px){
+ .ghostui{display:none}
+ .dialog{left:0;right:0;top:auto;bottom:0;width:auto;transform:none;border-radius:var(--r-lg) var(--r-lg) 0 0;max-height:92vh;display:flex;flex-direction:column;animation:riseIn var(--d-slow) var(--ease-out) both}
+ .handle{display:block;width:36px;height:4px;border-radius:2px;background:var(--seam-strong);margin:10px auto 0}
+ .dh{padding:var(--s-4) var(--s-5) var(--s-4)} .dh h1{font-size:26px} .dh p{font-size:var(--text-sm)}
+ .close{top:var(--s-4);right:var(--s-4)}
+ .cards{grid-template-columns:1fr;padding:0 var(--s-5);overflow:auto;gap:var(--s-3)}
+ .card{padding:var(--s-4);gap:var(--s-2)} .card h2{font-size:26px}
+ .card:not([aria-checked=true]) pre,.card:not([aria-checked=true]) .dialect,.card:not([aria-checked=true]) .traits{display:none}
+ .card:not([aria-checked=true]) .desc{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+ .df{margin-top:var(--s-3);padding:var(--s-4) var(--s-5) var(--s-5);flex-wrap:wrap} .df .foot{flex-basis:100%;order:3}
+ .df .btn{flex:1;justify-content:center;white-space:nowrap} .df .kbd{display:none}
+}
+</style></head><body>
+<div class="backdrop" aria-hidden="true">
+  <header class="topbar has-web"><span class="topbar-web" aria-hidden="true">{{WEB}}</span><span class="brand">{{MARK}}<b>Séance</b></span><span class="spacer"></span></header>
+  <div class="ghostui"><div class="t"></div><div></div><div></div><div></div></div>
+</div>
+<div class="scrim"></div>
+<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="pk-title">
+  <div class="handle"></div>
+  <div class="dh">
+    <div><span class="eyebrow">Step 1 of your séance</span><h1 id="pk-title">Who should <em class="it">answer?</em></h1><p>Pick the language the ghost writes in. You can switch mid-séance and keep your task.</p></div>
+    <button class="icon-btn close" aria-label="Close"><svg viewBox="0 0 16 16" fill="none"><path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5"/></svg></button>
+  </div>
+  <div class="cards" role="radiogroup" aria-labelledby="pk-title">
+    <button class="card" role="radio" aria-checked="true" tabindex="0">
+      <div class="top"><h2>COBOL</h2><span class="yr">b. 1959</span></div>
+      <div class="ep"><span>The ledger keeper</span><span class="sel"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="m3 7.5 2.5 2.5L11 4" stroke="currentColor" stroke-width="1.6"/></svg>Selected</span></div>
+      <p class="desc">Records, money and files. Wordy on purpose, so a manager could read it.</p>
+<pre class="crt"><span class="kw">UNSTRING</span> SALES-LINE
+  <span class="kw">DELIMITED BY</span> <span class="lit">","</span>
+  <span class="kw">INTO</span> WS-REGION WS-AMOUNT-TXT
+<span class="kw">ADD</span> WS-AMOUNT <span class="kw">TO</span> WS-TOTAL</pre>
+      <div class="traits"><span>Reads like English</span><span>Exact decimals</span><span>Fixed columns</span></div>
+      <div class="dialect"><label>Dialect</label><div class="select">COBOL-85, fixed format<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4"/></svg></div></div>
+    </button>
+    <button class="card" role="radio" aria-checked="false" tabindex="-1">
+      <div class="top"><h2>Fortran</h2><span class="yr">b. 1957</span></div>
+      <div class="ep"><span>The calculator</span><span class="sel"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="m3 7.5 2.5 2.5L11 4" stroke="currentColor" stroke-width="1.6"/></svg>Selected</span></div>
+      <p class="desc">Numbers, arrays and formulas. Made so scientists didn’t have to write machine code.</p>
+<pre class="crt"><span class="kw">read</span>(10, *, <span class="kw">iostat</span>=ios) region, amount
+<span class="kw">if</span> (ios /= 0) <span class="kw">exit</span>
+total = total + amount</pre>
+      <div class="traits"><span>Fast maths</span><span>Arrays first</span><span>Terse</span></div>
+      <div class="dialect"><label>Dialect</label><div class="select">Fortran 90, free form<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4"/></svg></div></div>
+    </button>
+    <button class="card" role="radio" aria-checked="false" tabindex="-1">
+      <div class="top"><h2>BASIC</h2><span class="yr">b. 1964</span></div>
+      <div class="ep"><span>The first teacher</span><span class="sel"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="m3 7.5 2.5 2.5L11 4" stroke="currentColor" stroke-width="1.6"/></svg>Selected</span></div>
+      <p class="desc">Line numbers, GOTO and instant answers. Built for students at a shared terminal.</p>
+<pre class="crt">20 <span class="kw">READ</span> R$, A
+30 <span class="kw">IF</span> R$ = <span class="lit">"END"</span> <span class="kw">THEN</span> 60
+40 <span class="kw">LET</span> T = T + A
+50 <span class="kw">GOTO</span> 20</pre>
+      <div class="traits"><span>Beginner friendly</span><span>Line numbers</span><span>GOTO</span></div>
+      <div class="dialect"><label>Dialect</label><div class="select">Classic line-numbered<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4"/></svg></div></div>
+    </button>
+
+  </div>
+  <div class="df">
+    <span class="foot">Not sure? Start with COBOL, it’s the one employers still ask about. ALGOL, Pascal and friends are still resting.</span>
+    <button class="btn btn-lg">Cancel</button>
+    <a class="btn btn-candle btn-lg" href="workspace.html" id="go">Summon with COBOL <span class="kbd">⏎</span></a>
+  </div>
+</div>
+<script>
+const cards=[...document.querySelectorAll('.card[role=radio]')];
+function pick(c){cards.forEach(x=>{x.setAttribute('aria-checked',x===c);x.tabIndex=x===c?0:-1});document.getElementById('go').firstChild.textContent='Summon with '+c.querySelector('h2').textContent+' ';}
+cards.forEach((c,i)=>{c.onclick=()=>pick(c);c.onkeydown=e=>{const d={ArrowRight:1,ArrowDown:1,ArrowLeft:-1,ArrowUp:-1}[e.key];if(d){e.preventDefault();const n=cards[(i+d+cards.length)%cards.length];pick(n);n.focus()}}});
+</script>
+</body></html>

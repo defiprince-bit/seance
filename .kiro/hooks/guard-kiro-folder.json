@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Guard .kiro and LICENSE",
+      "description": "Kiroween disqualifies entries whose .kiro folder is gitignored, and requires an open-source LICENSE. Checks both at the start of every session.",
+      "trigger": "SessionStart",
+      "action": { "type": "command", "command": "node .kiro/hooks/scripts/check-kiro-visible.mjs" },
+      "timeout": 20
+    }
+  ]
+}

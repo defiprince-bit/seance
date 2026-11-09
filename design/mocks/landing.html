@@ -1,0 +1,385 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Séance: ask in plain English, get an answer from 1959</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&family=VT323&family=Jolly+Lodger&display=swap" rel="stylesheet"><style>
+/* Séance design tokens: source of truth (mirrored in seance-steering.md) */
+:root{
+  /* surfaces */
+  --void:#0A090C;        /* app background */
+  --crypt:#121015;       /* panes, cards */
+  --altar:#1A171E;       /* raised: inputs, menus, active rows */
+  --terminal:#0D110E;    /* CRT code + run output background */
+  --seam:#2B2631;        /* hairline borders */
+  --seam-strong:#3D3645; /* hover borders, dividers on raised */
+  /* text */
+  --bone:#EDE6D8;        /* primary text, 15.2:1 on crypt */
+  --ash:#B3A999;         /* secondary text, 8.1:1 */
+  --dust:#8E8578;        /* footnotes, line numbers, 5.2:1 */
+  /* accents */
+  --candle:#E9A957;      /* primary action, active line, focus */
+  --candle-deep:#B9772F; /* pressed */
+  --candle-ink:#1A1006;  /* text on candle, 9.2:1 */
+  --candle-veil:rgba(233,169,87,.10); /* active-line wash */
+  --phosphor:#9FDDB0;    /* dead-language code text, success */
+  --phosphor-dim:#74A983;/* code comments, sequence area */
+  --ecto:#C7C0E6;        /* the ghost's voice: narration accents */
+  --danger:#EE8E7E;      /* errors */
+  /* type */
+  --font-display:"Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --font-body:"DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-code:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-crt:"VT323", "IBM Plex Mono", monospace; /* run output + tiny labels only */
+  --text-xs:12px; --text-sm:13px; --text-base:14px; --text-md:16px;
+  --text-lg:20px; --text-xl:28px; --text-2xl:40px; --text-hero:56px;
+  --leading-tight:1.1; --leading-snug:1.3; --leading-body:1.55; --leading-code:20px;
+  /* spacing (4px base) */
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px; --s-6:24px;
+  --s-8:32px; --s-10:40px; --s-14:56px; --s-20:80px;
+  /* radii */
+  --r-xs:4px; --r-sm:8px; --r-md:12px; --r-lg:20px; --r-pill:999px;
+  /* elevation + glow */
+  --shadow-pane:inset 0 1px 0 rgba(255,255,255,.03), 0 24px 60px -28px rgba(0,0,0,.7);
+  --shadow-pop:0 18px 50px -12px rgba(0,0,0,.75);
+  --glow-candle:0 0 0 1px rgba(233,169,87,.40), 0 0 28px rgba(233,169,87,.18);
+  --glow-phosphor:0 0 6px rgba(159,221,176,.35);  /* text-shadow on code */
+  --ring:0 0 0 2px var(--void), 0 0 0 4px var(--candle);
+  /* motion */
+  --d-instant:80ms; --d-fast:160ms; --d-base:240ms; --d-slow:420ms;
+  --d-glide:600ms; --d-breathe:4800ms; --stagger-line:40ms;
+  --ease-out:cubic-bezier(.2,.7,.2,1);
+  --ease-glide:cubic-bezier(.65,0,.35,1);
+  --ease-in:cubic-bezier(.5,0,.75,0);
+}
+/* v2 landing additions (Douglas review, 9 Nov 2026): playful spooky landing */
+:root{
+  --font-spooky:"Jolly Lodger", "Instrument Serif", Georgia, serif; /* landing display + wordmark only */
+  --pumpkin:#FF4A2E;      /* accent word, round CTA icon, wordmark. 4.6:1 on --charcoal */
+  --pumpkin-deep:#D9361D; /* pressed */
+  --pumpkin-glow:rgba(255,106,48,.45);
+  --charcoal:#242428;     /* landing card surface */
+  --charcoal-raised:#2E2E34; /* pills, tiles, chips hover */
+  --charcoal-line:#45454D;   /* outline chips / pill borders */
+  --card-text:#F6F1EA;    /* headline on charcoal */
+  --card-body:#C9C4BC;    /* body on charcoal, 8.9:1 */
+  --card-muted:#9A958E;   /* footnotes on charcoal, 5.2:1 */
+  --web:#F4EADF;          /* cobweb strokes, used at .7 opacity */
+  --backdrop:radial-gradient(120% 90% at 100% 0%,#D8622F 0%,#B24A26 28%,transparent 62%),radial-gradient(90% 80% at 0% 100%,#C25A2C 0%,#8E3E22 30%,transparent 65%),linear-gradient(160deg,#5E5752 0%,#6B4A3A 45%,#9C4524 100%);
+  --vignette:radial-gradient(130% 100% at 50% 50%,transparent 55%,rgba(20,10,6,.55) 100%);
+  --r-card:24px; --r-tile:22px;
+  --d-sway:7000ms; --d-float:6000ms;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--void);color:var(--bone);font:400 var(--text-base)/var(--leading-body) var(--font-body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(1200px 700px at 50% -10%,rgba(233,169,87,.07),transparent 60%),radial-gradient(900px 600px at 100% 110%,rgba(199,192,230,.05),transparent 60%)}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:none;box-shadow:var(--ring);border-radius:var(--r-sm)}
+.serif{font-family:var(--font-display);font-weight:400}
+.it{font-style:italic}
+.mono{font-family:var(--font-code)}
+.eyebrow{font:500 var(--text-xs)/1 var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--ash)}
+.foot{font-size:var(--text-xs);color:var(--dust)}
+/* mark + wordmark */
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand svg{width:26px;height:26px;flex:none}
+.brand b{font:400 27px/1 var(--font-spooky);letter-spacing:.01em;color:var(--pumpkin)}
+/* v2: one small cobweb in the app top bar corner; decorative only */
+.topbar-web{position:absolute;top:0;right:0;width:64px;height:56px;overflow:hidden;opacity:.34;pointer-events:none}
+.topbar-web svg{width:64px;height:64px;transform:scaleX(-1);transform-origin:50% 50%}
+.topbar.has-web{padding-right:76px}
+@media (max-width:767px){.topbar-web{width:44px}.topbar-web svg{width:44px;height:44px}.topbar.has-web{padding-right:52px}}
+/* top bar */
+.topbar{position:relative;z-index:5;height:56px;display:flex;align-items:center;gap:var(--s-6);padding:0 var(--s-6);border-bottom:1px solid var(--seam);background:rgba(10,9,12,.82);backdrop-filter:blur(10px)}
+.topbar nav{display:flex;gap:var(--s-6)}
+.topbar nav a{text-decoration:none;color:var(--ash);font-size:var(--text-sm)}
+.topbar nav a:hover{color:var(--bone)}
+.spacer{flex:1}
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:var(--r-sm);border:1px solid var(--seam-strong);background:transparent;color:var(--bone);font:500 var(--text-sm)/1 var(--font-body);text-decoration:none;cursor:pointer;transition:background var(--d-fast) var(--ease-out),border-color var(--d-fast) var(--ease-out),transform var(--d-instant) var(--ease-out)}
+.btn:hover{border-color:var(--ash);background:rgba(255,255,255,.03)}
+.btn:active{transform:translateY(1px)}
+.btn-lg{height:44px;padding:0 20px;font-size:var(--text-base)}
+.btn-candle{position:relative;background:var(--candle);border-color:var(--candle);color:var(--candle-ink)}
+.btn-candle:hover{background:#F0B56A;border-color:#F0B56A}
+.btn-candle:active{background:var(--candle-deep)}
+.btn-candle::after{content:"";position:absolute;inset:-6px;border-radius:14px;box-shadow:0 0 26px rgba(233,169,87,.45);opacity:.5;pointer-events:none;animation:breathe var(--d-breathe) ease-in-out infinite}
+.kbd{font:500 11px/1 var(--font-code);padding:3px 5px;border-radius:4px;background:rgba(0,0,0,.18);}
+.btn-ghost{border-color:transparent;color:var(--ash)}
+.btn-ghost:hover{color:var(--bone);background:rgba(255,255,255,.04);border-color:transparent}
+/* status pill */
+.pill{display:inline-flex;align-items:center;gap:7px;height:26px;padding:0 10px;border-radius:var(--r-pill);border:1px solid var(--seam);font-size:var(--text-xs);color:var(--ash);background:var(--crypt)}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--phosphor);position:relative}
+.pill i::after{content:"";position:absolute;inset:-4px;border-radius:50%;background:var(--phosphor);opacity:.25;animation:breathe var(--d-breathe) ease-in-out infinite}
+.pill.is-summoning i{background:var(--candle)} .pill.is-summoning i::after{background:var(--candle)}
+.pill.is-error i{background:var(--danger)} .pill.is-error i::after{display:none}
+/* chips */
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:var(--r-pill);border:1px solid var(--seam);background:var(--altar);font-size:var(--text-sm);color:var(--ash);cursor:pointer}
+.chip:hover{border-color:var(--seam-strong);color:var(--bone)}
+/* panes */
+.pane{position:relative;background:var(--crypt);border:1px solid var(--seam);border-radius:var(--r-md);box-shadow:var(--shadow-pane);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.pane-h{display:flex;align-items:center;gap:10px;height:44px;padding:0 var(--s-4);border-bottom:1px solid var(--seam);flex:none}
+.pane-h h3{margin:0;font:italic 400 19px/1 var(--font-display);color:var(--bone)}
+.pane-h .meta{font-size:var(--text-xs);color:var(--dust)}
+.icon-btn{width:30px;height:30px;display:grid;place-items:center;border-radius:var(--r-sm);border:1px solid transparent;background:none;color:var(--ash);cursor:pointer}
+.icon-btn:hover{background:rgba(255,255,255,.05);color:var(--bone)}
+.icon-btn svg{width:16px;height:16px}
+/* CRT surface: static scanlines, never animated */
+.crt{background:var(--terminal);position:relative}
+.crt::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(255,255,255,.018) 0 1px,transparent 1px 3px);mix-blend-mode:screen}
+/* motion primitives (opacity/transform only) */
+@keyframes breathe{0%,100%{opacity:.35}50%{opacity:.85}}
+@keyframes flickerIn{0%{opacity:0}55%{opacity:.75}70%{opacity:.5}100%{opacity:1}}
+@keyframes riseIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes lineIn{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
+@keyframes caret{0%,49%{opacity:1}50%,100%{opacity:0}} /* 1.06s cycle < 1Hz */
+.flicker-in{animation:flickerIn var(--d-slow) var(--ease-out) both}
+.rise-in{animation:riseIn var(--d-slow) var(--ease-out) both}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:1ms!important;animation-iteration-count:1!important;transition-duration:1ms!important;scroll-behavior:auto!important}
+  .btn-candle::after,.pill i::after{animation:none!important;opacity:.5}
+}
+
+</style>
+<style>
+body{background:#3a2a22;min-height:100vh}
+body::before{background:var(--backdrop)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:var(--vignette)}
+.page{position:relative;z-index:1;padding:40px 48px 56px}
+.card{position:relative;background:var(--charcoal);border-radius:var(--r-card);box-shadow:0 40px 90px -30px rgba(30,10,0,.7),inset 0 1px 0 rgba(255,255,255,.04);overflow:hidden;color:var(--card-body)}
+/* cobwebs */
+.web{position:absolute;z-index:6;pointer-events:none;width:340px;height:340px;opacity:.72;animation:sway var(--d-sway) ease-in-out infinite}
+.web svg{width:100%;height:100%;display:block}
+.web.tr{top:0;right:0;transform-origin:100% 0}
+.web.tr svg{transform:scaleX(-1)}
+.web.bl{left:0;top:660px;width:280px;height:280px;transform-origin:0 100%;animation-delay:-2.4s}
+.web.bl svg{transform:scaleY(-1)}
+@keyframes sway{0%,100%{transform:rotate(0deg)}50%{transform:rotate(1.2deg)}}
+.spider{position:absolute;z-index:6;right:214px;top:0;width:18px;pointer-events:none;transform-origin:50% 0;animation:dangle 5200ms ease-in-out infinite}
+.spider .thread{width:1px;height:150px;margin:0 auto;background:linear-gradient(var(--web),rgba(244,234,223,.5));opacity:.7}
+.spider svg{display:block;width:18px;height:18px;margin-top:-2px}
+@keyframes dangle{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(10px) rotate(2deg)}}
+/* nav */
+.nav{position:relative;z-index:7;display:flex;align-items:center;height:84px;padding:0 56px}
+.wm{display:flex;align-items:center;gap:10px;text-decoration:none}
+.wm svg{width:28px;height:28px}
+.wm b{font:400 34px/1 var(--font-spooky);color:var(--pumpkin);letter-spacing:.01em}
+.links{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:28px}
+.links a{color:var(--card-body);text-decoration:none;font-size:var(--text-base)}
+.links a:hover{color:var(--card-text)}
+.nav-r{margin-left:auto;display:flex;gap:12px;margin-right:220px}
+.round{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;border:0;cursor:pointer;text-decoration:none;transition:transform var(--d-fast) var(--ease-out)}
+.round:hover{transform:translateY(-1px)}
+.round svg{width:18px;height:18px}
+.round.dark{background:var(--charcoal-raised);color:var(--card-text)}
+.round.red{background:var(--pumpkin);color:#fff;box-shadow:0 6px 20px -6px var(--pumpkin-glow)}
+/* hero */
+.hero>*{min-width:0}
+.hero{position:relative;display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:24px;padding:40px 56px 0;min-height:760px}
+.hero-copy{position:relative;z-index:3;padding-top:64px}
+.hero h1{margin:0 0 28px;font:400 80px/.98 var(--font-spooky);color:var(--card-text);letter-spacing:.01em}
+.hero h1 .accent{color:var(--pumpkin)}
+.hero .lede{max-width:470px;margin:0 0 40px;font-size:16px;line-height:1.6;color:var(--card-body)}
+.ctas{display:flex;align-items:center;gap:28px}
+.pill-cta{display:inline-flex;align-items:center;gap:12px;height:52px;padding:0 22px 0 6px;border-radius:var(--r-pill);background:var(--charcoal-raised);color:var(--card-text);text-decoration:none;font-weight:500;font-size:var(--text-base);box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);transition:transform var(--d-fast) var(--ease-out),background var(--d-fast) var(--ease-out)}
+.pill-cta:hover{background:#38383f;transform:translateY(-1px)}
+.pill-cta .dot{width:40px;height:40px;border-radius:50%;background:var(--pumpkin);display:grid;place-items:center;color:#fff;box-shadow:0 4px 16px -4px var(--pumpkin-glow)}
+.pill-cta .dot svg{width:20px;height:20px}
+.text-link{color:var(--card-body);font-size:var(--text-base);text-decoration:underline;text-underline-offset:6px;text-decoration-color:rgba(201,196,188,.6)}
+.text-link:hover{color:var(--card-text)}
+.tiles{display:flex;gap:24px;margin-top:84px}
+.tile{position:relative;width:240px;height:170px;border-radius:var(--r-tile);background:linear-gradient(160deg,#4B3631 0%,#3A2D2B 55%,#2F2829 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.tile img{position:absolute;left:50%;bottom:22px;width:176px;transform:translateX(-50%);filter:drop-shadow(0 14px 18px rgba(0,0,0,.45));animation:float var(--d-float) ease-in-out infinite}
+.tile:nth-child(2) img{animation-delay:-3s;width:164px}
+.tile span{position:absolute;left:16px;right:16px;bottom:12px;font-size:var(--text-sm);color:var(--card-body);text-align:center}
+.stage{position:relative;z-index:2}
+.glow{position:absolute;left:52%;top:42%;width:560px;height:560px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(255,110,50,.42),rgba(255,80,30,.14) 55%,transparent);animation:breathe var(--d-breathe) ease-in-out infinite;pointer-events:none}
+.obj{position:relative;display:block;width:540px;max-width:100%;margin:-10px auto 0;mix-blend-mode:lighten;-webkit-mask-image:radial-gradient(closest-side,#000 78%,transparent 100%);mask-image:radial-gradient(closest-side,#000 78%,transparent 100%);animation:float var(--d-float) ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.tile img{animation-name:floatX}
+@keyframes floatX{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-6px)}}
+.chips{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:10px 10px;max-width:440px;margin:6px auto 0}
+.chips span{display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:var(--r-pill);border:1px solid var(--charcoal-line);color:var(--card-body);font-size:var(--text-sm);background:rgba(36,36,40,.6)}
+/* below the fold */
+.band{position:relative;padding:96px 56px;border-top:1px solid #34343A}
+.sh{display:flex;justify-content:space-between;align-items:end;gap:32px;margin-bottom:40px}
+.sh .eyebrow{color:var(--card-muted)}
+.sh h2,.final h2{margin:10px 0 0;font:400 56px/1 var(--font-spooky);color:var(--card-text)}
+.sh h2 .accent,.final h2 .accent{color:var(--pumpkin)}
+.sh p{max-width:380px;margin:0;color:var(--card-body)}
+.peek{display:grid;grid-template-columns:7fr 5fr;gap:48px;align-items:center}
+.preview{position:relative;border-radius:var(--r-lg);border:1px solid var(--seam-strong);background:var(--crypt);box-shadow:var(--shadow-pop);overflow:hidden}
+.pv-task{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--seam);font-size:var(--text-sm)}
+.pv-task .q{flex:1;color:var(--bone)} .pv-task .q span{color:var(--dust)}
+.pv-body{display:grid;grid-template-columns:1.25fr 1fr}
+.pv-code{padding:14px 0;font:400 12.5px/20px var(--font-code);color:var(--phosphor);text-shadow:var(--glow-phosphor)}
+.pv-code div{padding:0 16px 0 44px;white-space:pre;position:relative}
+.pv-code div b{position:absolute;left:12px;width:22px;text-align:right;color:var(--dust);font-weight:400;text-shadow:none}
+.pv-code .on{background:var(--candle-veil)} .pv-code .on::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--candle)}
+.kw{color:#D4F5DC} .lit{color:var(--candle)}
+.pv-ghost{border-left:1px solid var(--seam);padding:18px}
+.pv-ghost .who{display:flex;align-items:center;gap:8px;color:var(--ecto);font-size:var(--text-xs);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.pv-ghost .who svg{width:16px;height:16px}
+.pv-ghost blockquote{margin:0;font:italic 400 20px/1.3 var(--font-display);color:var(--bone)}
+.pv-ghost p{margin:10px 0 0;color:var(--ash);font-size:var(--text-sm)}
+.pv-py{border-top:1px solid var(--seam);padding:12px 16px;display:flex;gap:12px;align-items:center;font:400 12.5px/1.5 var(--font-code);color:var(--ash)}
+.pv-py .tag{font:500 11px/1 var(--font-body);letter-spacing:.1em;text-transform:uppercase;color:var(--dust)}
+.match{margin-left:auto;color:var(--phosphor);font-family:var(--font-body);font-size:var(--text-xs)}
+.peek-copy ul{margin:24px 0 0;padding:0;list-style:none;display:grid;gap:12px}
+.peek-copy li{display:flex;gap:12px;color:var(--card-text)} .peek-copy li::before{content:"";flex:none;width:8px;height:8px;margin-top:7px;border-radius:50%;background:var(--pumpkin)}
+.peek-copy p{color:var(--card-body);margin:16px 0 0}
+.steps,.spirits{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.step,.spirit{padding:28px;border-radius:var(--r-tile);background:var(--charcoal-raised);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.step .n{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--pumpkin);color:#fff;font:400 20px/1 var(--font-spooky)}
+.step h3,.spirit h3{margin:18px 0 8px;font:400 30px/1.05 var(--font-spooky);color:var(--card-text)}
+.step p,.spirit p{margin:0;color:var(--card-body)}
+.spirit{text-decoration:none;transition:transform var(--d-base) var(--ease-out)}
+.spirit:hover{transform:translateY(-3px)}
+.spirit .top{display:flex;justify-content:space-between;align-items:baseline}
+.spirit h3{margin:0;font-size:40px}
+.spirit .yr{font:400 18px/1 var(--font-crt);color:var(--card-muted)}
+.spirit .ep{color:var(--pumpkin);margin:6px 0 16px;font-size:var(--text-sm);font-weight:500}
+.spirit pre{margin:0 0 16px;padding:12px;border-radius:12px;font:400 12px/18px var(--font-code);color:var(--phosphor);overflow:hidden}
+.why{display:grid;grid-template-columns:7fr 5fr;gap:56px;align-items:start}
+.why blockquote{margin:0;font:400 46px/1.08 var(--font-spooky);color:var(--card-text)}
+.why blockquote .accent{color:var(--pumpkin)}
+.why p{color:var(--card-body);margin:0 0 16px}
+.final{text-align:center;padding:110px 56px}
+.final p{color:var(--card-body);margin:14px 0 32px}
+.final .ctas{justify-content:center}
+.foot-row{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:28px 240px 36px 56px;border-top:1px solid #34343A;font-size:var(--text-xs);color:var(--card-muted)}
+.web.end{top:auto;bottom:0;left:auto;right:0;width:220px;height:220px;transform-origin:100% 100%}
+.web.end svg{transform:scale(-1,-1)}
+@media (prefers-reduced-motion:reduce){.web,.spider,.obj,.tile img,.glow{animation:none!important}.tile img{transform:translateX(-50%)}}
+@media (max-width:1100px){.hero{grid-template-columns:1fr;min-height:0}.stage{order:-1}.hero-copy{padding-top:0}.links{display:none}.steps,.spirits{grid-template-columns:1fr 1fr}.peek,.why{grid-template-columns:1fr}}
+@media (max-width:767px){
+ .page{padding:0}
+ .card{border-radius:0;min-height:100vh}
+ .web{width:130px;height:130px}.web.bl{display:none}.web.end{width:110px;height:110px}
+ .spider{right:78px}.spider .thread{height:64px}
+ .nav{height:64px;padding:0 20px}.nav-r{margin-right:96px;gap:8px}.nav-r .dark{display:none}.round{width:36px;height:36px}
+ .wm b{font-size:24px}
+ .hero{padding:4px 20px 0;gap:0}
+ .obj{width:300px;margin-top:0}.glow{width:340px;height:340px}
+ .chips{display:none}
+ .hero h1{font-size:54px;margin-bottom:16px}
+ .hero .lede{font-size:15px;margin-bottom:28px}
+ .ctas{gap:20px;flex-wrap:wrap}
+ .tiles{gap:14px;margin-top:56px;padding-bottom:12px}.tile{flex:1;width:auto;height:120px}.tile img{width:118px;bottom:14px}.tile:nth-child(2) img{width:110px}
+ .mobile-chips{display:flex!important}
+ .band{padding:64px 20px}.sh{flex-direction:column;align-items:start}.sh h2,.final h2{font-size:42px}
+ .steps,.spirits{grid-template-columns:1fr}.pv-body{grid-template-columns:1fr}.pv-ghost{border-left:0;border-top:1px solid var(--seam)}
+ .why blockquote{font-size:34px}.final{padding:72px 20px}.foot-row{flex-direction:column;align-items:start;padding:24px 120px 24px 20px}
+}
+.mobile-chips{display:none;flex-wrap:wrap;gap:8px;margin-top:24px}
+.mobile-chips span{display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:var(--r-pill);border:1px solid var(--charcoal-line);color:var(--card-body);font-size:var(--text-sm)}
+</style></head><body>
+<div class="page">
+<div class="card">
+  <div class="web tr" aria-hidden="true"><svg class="web-svg" viewBox="-6 -6 352 352" fill="none" aria-hidden="true"><g stroke="#F4EADF" stroke-width="1.5" stroke-linecap="round" vector-effect="non-scaling-stroke"><path d="M0 0L312.3 -21.8" vector-effect="non-scaling-stroke"/><path d="M0 0L293.8 33.5" vector-effect="non-scaling-stroke"/><path d="M0 0L276.5 107.6" vector-effect="non-scaling-stroke"/><path d="M0 0L269.0 159.2" vector-effect="non-scaling-stroke"/><path d="M0 0L233.9 235.3" vector-effect="non-scaling-stroke"/><path d="M0 0L164.3 249.0" vector-effect="non-scaling-stroke"/><path d="M0 0L117.0 279.5" vector-effect="non-scaling-stroke"/><path d="M0 0L46.0 319.0" vector-effect="non-scaling-stroke"/><path d="M0 0L-23.5 336.7" vector-effect="non-scaling-stroke"/><path d="M29.7 -2.1Q25.4 0.6 29.1 3.3Q25.0 6.2 28.6 11.1Q22.9 11.1 24.5 14.5Q20.0 15.6 21.4 21.6Q16.1 19.8 16.0 24.3Q11.7 21.9 11.1 26.5Q6.6 23.8 4.1 28.4Q0.9 24.8 -2.0 29.0" vector-effect="non-scaling-stroke"/><path d="M63.9 -4.5Q56.1 1.2 66.1 7.5Q55.0 13.6 60.8 23.6Q50.2 24.4 55.6 32.9Q44.3 34.5 46.5 46.8Q35.6 43.8 36.0 54.5Q26.3 49.3 24.9 59.5Q15.1 54.6 9.6 66.4Q2.1 57.5 -4.6 66.5" vector-effect="non-scaling-stroke"/><path d="M103.6 -7.2Q90.5 2.0 106.0 12.1Q87.0 21.5 94.7 36.8Q79.7 38.8 89.9 53.2Q69.6 54.2 71.0 71.4Q56.1 68.9 58.4 88.4Q43.0 80.7 41.2 98.5Q24.3 87.8 15.0 104.1Q3.4 91.5 -7.5 107.4" vector-effect="non-scaling-stroke"/><path d="M147.1 -10.3M139.5 15.9Q120.4 29.7 137.8 53.6Q114.1 55.5 126.7 75.0Q101.3 78.9 106.6 107.3M82.2 124.6Q59.1 110.9 55.2 132.0Q32.9 119.1 20.6 142.7Q4.6 125.4 -10.3 147.2" vector-effect="non-scaling-stroke"/><path d="M186.0 -13.0Q163.5 3.6 192.5 21.9Q156.8 38.7 169.5 65.9Q142.8 69.4 161.3 95.4Q127.7 99.4 133.1 134.0Q103.9 127.7 106.8 161.8Q78.3 146.8 74.5 178.0Q44.3 160.2 27.7 191.6Q6.0 162.6 -12.9 184.3" vector-effect="non-scaling-stroke"/><path d="M231.2 -16.2Q200.1 4.4 232.2 26.5Q192.6 47.6 212.1 82.5Q174.2 84.7 191.8 113.5M162.5 163.5Q124.8 153.5 126.5 191.6Q93.6 175.6 90.1 215.2Q54.3 196.3 34.3 238.0Q7.5 204.5 -16.4 235.0" vector-effect="non-scaling-stroke"/><path d="M274.0 -19.2M273.0 31.1M250.0 97.2Q212.0 103.1 241.0 142.6Q185.7 144.6 188.4 189.6Q145.1 178.4 147.3 223.2M104.5 249.6Q61.9 223.8 38.5 266.8Q8.6 233.3 -19.1 272.8" vector-effect="non-scaling-stroke"/><path d="M312.3 -21.8Q261.7 5.7 293.8 33.5Q247.3 61.1 276.5 107.6Q235.6 114.6 269.0 159.2Q212.4 165.3 220.8 222.2Q165.9 204.0 164.3 249.0Q121.7 228.2 117.0 279.5M46.0 318.8Q10.2 277.0 -22.5 321.8" vector-effect="non-scaling-stroke"/></g></svg></div>
+  <div class="spider" aria-hidden="true"><div class="thread"></div><svg viewBox="0 0 24 24" fill="none"><g stroke="#F4EADF" stroke-width="1.3" stroke-linecap="round"><path d="M9 10 4 6M9 12H3M9 14l-5 3M10 15l-3 5M15 10l5-4M15 12h6M15 14l5 3M14 15l3 5"/></g><ellipse cx="12" cy="13" rx="3.4" ry="4" fill="#1A1A1D" stroke="#F4EADF" stroke-width="1.2"/><circle cx="12" cy="8.6" r="2" fill="#1A1A1D" stroke="#F4EADF" stroke-width="1.2"/></svg></div>
+  <div class="web bl" aria-hidden="true"><svg class="web-svg" viewBox="-6 -6 352 352" fill="none" aria-hidden="true"><g stroke="#F4EADF" stroke-width="1.5" stroke-linecap="round" vector-effect="non-scaling-stroke"><path d="M0 0L312.3 -21.8" vector-effect="non-scaling-stroke"/><path d="M0 0L293.8 33.5" vector-effect="non-scaling-stroke"/><path d="M0 0L276.5 107.6" vector-effect="non-scaling-stroke"/><path d="M0 0L269.0 159.2" vector-effect="non-scaling-stroke"/><path d="M0 0L233.9 235.3" vector-effect="non-scaling-stroke"/><path d="M0 0L164.3 249.0" vector-effect="non-scaling-stroke"/><path d="M0 0L117.0 279.5" vector-effect="non-scaling-stroke"/><path d="M0 0L46.0 319.0" vector-effect="non-scaling-stroke"/><path d="M0 0L-23.5 336.7" vector-effect="non-scaling-stroke"/><path d="M29.7 -2.1Q25.4 0.6 29.1 3.3Q25.0 6.2 28.6 11.1Q22.9 11.1 24.5 14.5Q20.0 15.6 21.4 21.6Q16.1 19.8 16.0 24.3Q11.7 21.9 11.1 26.5Q6.6 23.8 4.1 28.4Q0.9 24.8 -2.0 29.0" vector-effect="non-scaling-stroke"/><path d="M63.9 -4.5Q56.1 1.2 66.1 7.5Q55.0 13.6 60.8 23.6Q50.2 24.4 55.6 32.9Q44.3 34.5 46.5 46.8Q35.6 43.8 36.0 54.5Q26.3 49.3 24.9 59.5Q15.1 54.6 9.6 66.4Q2.1 57.5 -4.6 66.5" vector-effect="non-scaling-stroke"/><path d="M103.6 -7.2Q90.5 2.0 106.0 12.1Q87.0 21.5 94.7 36.8Q79.7 38.8 89.9 53.2Q69.6 54.2 71.0 71.4Q56.1 68.9 58.4 88.4Q43.0 80.7 41.2 98.5Q24.3 87.8 15.0 104.1Q3.4 91.5 -7.5 107.4" vector-effect="non-scaling-stroke"/><path d="M147.1 -10.3M139.5 15.9Q120.4 29.7 137.8 53.6Q114.1 55.5 126.7 75.0Q101.3 78.9 106.6 107.3M82.2 124.6Q59.1 110.9 55.2 132.0Q32.9 119.1 20.6 142.7Q4.6 125.4 -10.3 147.2" vector-effect="non-scaling-stroke"/><path d="M186.0 -13.0Q163.5 3.6 192.5 21.9Q156.8 38.7 169.5 65.9Q142.8 69.4 161.3 95.4Q127.7 99.4 133.1 134.0Q103.9 127.7 106.8 161.8Q78.3 146.8 74.5 178.0Q44.3 160.2 27.7 191.6Q6.0 162.6 -12.9 184.3" vector-effect="non-scaling-stroke"/><path d="M231.2 -16.2Q200.1 4.4 232.2 26.5Q192.6 47.6 212.1 82.5Q174.2 84.7 191.8 113.5M162.5 163.5Q124.8 153.5 126.5 191.6Q93.6 175.6 90.1 215.2Q54.3 196.3 34.3 238.0Q7.5 204.5 -16.4 235.0" vector-effect="non-scaling-stroke"/><path d="M274.0 -19.2M273.0 31.1M250.0 97.2Q212.0 103.1 241.0 142.6Q185.7 144.6 188.4 189.6Q145.1 178.4 147.3 223.2M104.5 249.6Q61.9 223.8 38.5 266.8Q8.6 233.3 -19.1 272.8" vector-effect="non-scaling-stroke"/><path d="M312.3 -21.8Q261.7 5.7 293.8 33.5Q247.3 61.1 276.5 107.6Q235.6 114.6 269.0 159.2Q212.4 165.3 220.8 222.2Q165.9 204.0 164.3 249.0Q121.7 228.2 117.0 279.5M46.0 318.8Q10.2 277.0 -22.5 321.8" vector-effect="non-scaling-stroke"/></g></svg></div>
+
+  <header class="nav">
+    <a class="wm" href="#" aria-label="Séance home"><svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16 2.8c3.4 0 12.6 14.6 12.6 20.6 0 4.3-5.4 5.8-12.6 5.8S3.4 27.7 3.4 23.4C3.4 17.4 12.6 2.8 16 2.8Z" stroke="#E9A957" stroke-width="1.6" stroke-linejoin="round"/><circle cx="16" cy="18" r="5.4" stroke="#E9A957" stroke-width="1.6"/><rect x="14.6" y="15.6" width="2.8" height="4.8" rx=".4" fill="#9FDDB0"/><circle cx="9" cy="25.4" r=".9" fill="#E9A957"/><circle cx="23" cy="25.4" r=".9" fill="#E9A957"/></svg><b>Séance</b></a>
+    <nav class="links" aria-label="Primary"><a href="#how">How it works</a><a href="#spirits">The spirits</a><a href="#peek">Inside a séance</a><a href="#why">Why COBOL</a></nav>
+    <div class="nav-r">
+      <a class="round dark" href="#peek" aria-label="See inside a séance"><svg viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.6"/><path d="m13.2 13.2 3.3 3.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></a>
+      <a class="round red" href="workspace.html" aria-label="Begin a séance"><svg viewBox="0 0 20 20" fill="none"><path d="M10 2.5c2 0 7.5 8.6 7.5 12.2 0 2.5-3.2 3.4-7.5 3.4s-7.5-.9-7.5-3.4C2.5 11.1 8 2.5 10 2.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="10" cy="11.6" r="2.8" stroke="currentColor" stroke-width="1.6"/></svg></a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <h1>Ask in plain English,<br>get an answer from <span class="accent">1959</span></h1>
+      <p class="lede">Séance writes your task in COBOL, Fortran or BASIC and runs it. A patient ghost explains every line, then brings the answer back to modern Python. Python runs in your browser. COBOL runs on a real GnuCOBOL compiler.</p>
+      <div class="ctas">
+        <a class="pill-cta" href="workspace.html"><span class="dot"><svg viewBox="0 0 20 20" fill="none"><path d="M10 2.5c2 0 7.5 8.6 7.5 12.2 0 2.5-3.2 3.4-7.5 3.4s-7.5-.9-7.5-3.4C2.5 11.1 8 2.5 10 2.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="10" cy="11.6" r="2.8" stroke="currentColor" stroke-width="1.6"/></svg></span>Begin a séance</a>
+        <a class="text-link" href="#how">See how it works</a>
+      </div>
+      <div class="mobile-chips" aria-label="Features"><span>COBOL</span><span>Fortran</span><span>BASIC</span><span>Line-by-line ghost</span><span>Back to Python</span><span>Real GnuCOBOL compiler</span></div>
+      <div class="tiles">
+        <a class="tile" href="#how" aria-label="How it works"><img src="../assets/prop-hat-floppy.png" alt=""></a>
+        <a class="tile" href="#peek" aria-label="Inside a séance"><img src="../assets/prop-candle-cards.png" alt=""></a>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="glow" aria-hidden="true"></div>
+      <img class="obj" src="../assets/hero-terminal-dark.jpg" alt="A friendly old computer terminal whose green screen glows with a carved pumpkin face, sitting on a stack of punch cards">
+      <div class="chips" aria-label="Features"><span>COBOL</span><span>Fortran</span><span>BASIC</span><span>Line-by-line ghost</span><span>Back to Python</span><span>Real GnuCOBOL compiler</span></div>
+    </div>
+  </section>
+
+  <section class="band" id="how">
+    <div class="sh"><div><span class="eyebrow">How a séance works</span><h2>Three steps, <span class="accent">one old friend</span></h2></div><p>You never have to write the dead language yourself. You just have to be curious about it.</p></div>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h3>Say what you need</h3><p>Type a modern task in plain English, and attach a small file if it needs one.</p></div>
+      <div class="step"><div class="n">2</div><h3>The ghost writes and runs it</h3><p>Real COBOL, Fortran or BASIC appears line by line and runs on a real compiler. You see the actual output.</p></div>
+      <div class="step"><div class="n">3</div><h3>Bring it back to Python</h3><p>Every line is explained, then translated to modern Python, and both results are checked against each other.</p></div>
+    </div>
+  </section>
+
+  <section class="band" id="peek">
+    <div class="peek">
+      <div class="preview" role="img" aria-label="Preview of the séance workspace: COBOL lines 27 to 29 highlighted, with the ghost's explanation beside them">
+        <div class="pv-task"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#E9A957" stroke-width="1.5"/></svg><span class="q">Parse sales.csv and total the sales <span>· COBOL</span></span><span class="pill"><i></i>Spirit present</span></div>
+        <div class="pv-body">
+          <div class="pv-code crt">
+<div><b>23</b><span class="kw">PERFORM UNTIL</span> WS-EOF = <span class="lit">"Y"</span></div>
+<div><b>24</b>    <span class="kw">READ</span> SALES-FILE</div>
+<div><b>25</b>        <span class="kw">AT END MOVE</span> <span class="lit">"Y"</span> <span class="kw">TO</span> WS-EOF</div>
+<div><b>26</b>        <span class="kw">NOT AT END</span></div>
+<div class="on"><b>27</b>          <span class="kw">UNSTRING</span> SALES-LINE</div>
+<div class="on"><b>  </b>            <span class="kw">DELIMITED BY</span> <span class="lit">","</span></div>
+<div class="on"><b>28</b>            <span class="kw">INTO</span> WS-REGION WS-AMOUNT-TXT</div>
+<div class="on"><b>29</b>          <span class="kw">END-UNSTRING</span></div>
+<div><b>30</b>          <span class="kw">COMPUTE</span> WS-AMOUNT =</div>
+<div><b>  </b>            <span class="kw">FUNCTION NUMVAL</span>(WS-AMOUNT-TXT)</div>
+<div><b>31</b>          <span class="kw">ADD</span> WS-AMOUNT <span class="kw">TO</span> WS-TOTAL</div>
+<div><b>32</b>    <span class="kw">END-READ</span></div>
+          </div>
+          <div class="pv-ghost">
+            <div class="who"><svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16 2.8c3.4 0 12.6 14.6 12.6 20.6 0 4.3-5.4 5.8-12.6 5.8S3.4 27.7 3.4 23.4C3.4 17.4 12.6 2.8 16 2.8Z" stroke="#E9A957" stroke-width="1.6" stroke-linejoin="round"/><circle cx="16" cy="18" r="5.4" stroke="#E9A957" stroke-width="1.6"/><rect x="14.6" y="15.6" width="2.8" height="4.8" rx=".4" fill="#9FDDB0"/><circle cx="9" cy="25.4" r=".9" fill="#E9A957"/><circle cx="23" cy="25.4" r=".9" fill="#E9A957"/></svg> The ghost · lines 27–29</div>
+            <blockquote>“We had no split(). We had UNSTRING, and we liked it.”</blockquote>
+            <p>It cuts each line at the comma and pours the pieces into two named boxes: the region, then the amount as text.</p>
+          </div>
+        </div>
+        <div class="pv-py"><span class="tag">Python</span><span>for row in csv.DictReader(f):</span><span class="match">✓ Both print 5871.50</span></div>
+      </div>
+      <div class="peek-copy">
+        <span class="eyebrow" style="color:var(--card-muted)">Inside a séance</span>
+        <div class="sh" style="margin:0"><h2>A ghost who <span class="accent">shows its work</span></h2></div>
+        <ul><li>A working program for a task you already understand</li><li>A plain-English reason for every line</li><li>Each idea mapped to the Python you already know</li></ul>
+        <p class="foot" style="color:var(--card-muted)">Generated code is for learning, not production.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="spirits">
+    <div class="sh"><div><span class="eyebrow">The spirits</span><h2>Choose <span class="accent">who answers</span></h2></div><p>Each language has its own temperament. Start with COBOL, because that’s where the work is.</p></div>
+    <div class="spirits">
+      <a class="spirit" href="picker.html"><div class="top"><h3>COBOL</h3><span class="yr">b. 1959</span></div><div class="ep">The ledger keeper</div><pre class="crt">ADD WS-AMOUNT TO WS-TOTAL
+DISPLAY "TOTAL: " WS-TOTAL-OUT</pre><p>Reads almost like English. Still behind a lot of payroll, banking and public records.</p></a>
+      <a class="spirit" href="picker.html"><div class="top"><h3>Fortran</h3><span class="yr">b. 1957</span></div><div class="ep">The calculator</div><pre class="crt">total = total + amount
+print '(A,F10.2)', 'TOTAL:', total</pre><p>Built for numbers. Still turns up in science and engineering code.</p></a>
+      <a class="spirit" href="picker.html"><div class="top"><h3>BASIC</h3><span class="yr">b. 1964</span></div><div class="ep">The first teacher</div><pre class="crt">40 LET T = T + A
+50 GOTO 20</pre><p>The language a generation learned on. Line numbers, GOTO and all.</p></a>
+    </div>
+  </section>
+
+  <section class="band" id="why"><div class="why">
+    <blockquote>Some systems that pay pensions and move money are older than we are. <span class="accent">The people who wrote them are retiring.</span></blockquote>
+    <div><p>Séance is a gentle first hour with COBOL and its cousins. You don’t install a compiler or read a 600-page manual first.</p><p>Ask about something you already know how to do, and watch how it was done before you were born.</p></div>
+  </div></section>
+
+  <section class="band final">
+    <h2>The candles are lit. <span class="accent">Ask anything.</span></h2>
+    <p>Your first séance takes about a minute.</p>
+    <div class="ctas"><a class="pill-cta" href="workspace.html"><span class="dot"><svg viewBox="0 0 20 20" fill="none"><path d="M10 2.5c2 0 7.5 8.6 7.5 12.2 0 2.5-3.2 3.4-7.5 3.4s-7.5-.9-7.5-3.4C2.5 11.1 8 2.5 10 2.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="10" cy="11.6" r="2.8" stroke="currentColor" stroke-width="1.6"/></svg></span>Begin a séance</a></div>
+  </section>
+  <div class="foot-row"><a class="wm" href="#"><svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16 2.8c3.4 0 12.6 14.6 12.6 20.6 0 4.3-5.4 5.8-12.6 5.8S3.4 27.7 3.4 23.4C3.4 17.4 12.6 2.8 16 2.8Z" stroke="#E9A957" stroke-width="1.6" stroke-linejoin="round"/><circle cx="16" cy="18" r="5.4" stroke="#E9A957" stroke-width="1.6"/><rect x="14.6" y="15.6" width="2.8" height="4.8" rx=".4" fill="#9FDDB0"/><circle cx="9" cy="25.4" r=".9" fill="#E9A957"/><circle cx="23" cy="25.4" r=".9" fill="#E9A957"/></svg><b style="font-size:22px">Séance</b></a><span>A learning project, 2026. Generated code is for study. Check it before you run it anywhere that matters.</span></div>
+  <div class="web end" aria-hidden="true"><svg class="web-svg" viewBox="-6 -6 352 352" fill="none" aria-hidden="true"><g stroke="#F4EADF" stroke-width="1.5" stroke-linecap="round" vector-effect="non-scaling-stroke"><path d="M0 0L312.3 -21.8" vector-effect="non-scaling-stroke"/><path d="M0 0L293.8 33.5" vector-effect="non-scaling-stroke"/><path d="M0 0L276.5 107.6" vector-effect="non-scaling-stroke"/><path d="M0 0L269.0 159.2" vector-effect="non-scaling-stroke"/><path d="M0 0L233.9 235.3" vector-effect="non-scaling-stroke"/><path d="M0 0L164.3 249.0" vector-effect="non-scaling-stroke"/><path d="M0 0L117.0 279.5" vector-effect="non-scaling-stroke"/><path d="M0 0L46.0 319.0" vector-effect="non-scaling-stroke"/><path d="M0 0L-23.5 336.7" vector-effect="non-scaling-stroke"/><path d="M29.7 -2.1Q25.4 0.6 29.1 3.3Q25.0 6.2 28.6 11.1Q22.9 11.1 24.5 14.5Q20.0 15.6 21.4 21.6Q16.1 19.8 16.0 24.3Q11.7 21.9 11.1 26.5Q6.6 23.8 4.1 28.4Q0.9 24.8 -2.0 29.0" vector-effect="non-scaling-stroke"/><path d="M63.9 -4.5Q56.1 1.2 66.1 7.5Q55.0 13.6 60.8 23.6Q50.2 24.4 55.6 32.9Q44.3 34.5 46.5 46.8Q35.6 43.8 36.0 54.5Q26.3 49.3 24.9 59.5Q15.1 54.6 9.6 66.4Q2.1 57.5 -4.6 66.5" vector-effect="non-scaling-stroke"/><path d="M103.6 -7.2Q90.5 2.0 106.0 12.1Q87.0 21.5 94.7 36.8Q79.7 38.8 89.9 53.2Q69.6 54.2 71.0 71.4Q56.1 68.9 58.4 88.4Q43.0 80.7 41.2 98.5Q24.3 87.8 15.0 104.1Q3.4 91.5 -7.5 107.4" vector-effect="non-scaling-stroke"/><path d="M147.1 -10.3M139.5 15.9Q120.4 29.7 137.8 53.6Q114.1 55.5 126.7 75.0Q101.3 78.9 106.6 107.3M82.2 124.6Q59.1 110.9 55.2 132.0Q32.9 119.1 20.6 142.7Q4.6 125.4 -10.3 147.2" vector-effect="non-scaling-stroke"/><path d="M186.0 -13.0Q163.5 3.6 192.5 21.9Q156.8 38.7 169.5 65.9Q142.8 69.4 161.3 95.4Q127.7 99.4 133.1 134.0Q103.9 127.7 106.8 161.8Q78.3 146.8 74.5 178.0Q44.3 160.2 27.7 191.6Q6.0 162.6 -12.9 184.3" vector-effect="non-scaling-stroke"/><path d="M231.2 -16.2Q200.1 4.4 232.2 26.5Q192.6 47.6 212.1 82.5Q174.2 84.7 191.8 113.5M162.5 163.5Q124.8 153.5 126.5 191.6Q93.6 175.6 90.1 215.2Q54.3 196.3 34.3 238.0Q7.5 204.5 -16.4 235.0" vector-effect="non-scaling-stroke"/><path d="M274.0 -19.2M273.0 31.1M250.0 97.2Q212.0 103.1 241.0 142.6Q185.7 144.6 188.4 189.6Q145.1 178.4 147.3 223.2M104.5 249.6Q61.9 223.8 38.5 266.8Q8.6 233.3 -19.1 272.8" vector-effect="non-scaling-stroke"/><path d="M312.3 -21.8Q261.7 5.7 293.8 33.5Q247.3 61.1 276.5 107.6Q235.6 114.6 269.0 159.2Q212.4 165.3 220.8 222.2Q165.9 204.0 164.3 249.0Q121.7 228.2 117.0 279.5M46.0 318.8Q10.2 277.0 -22.5 321.8" vector-effect="non-scaling-stroke"/></g></svg></div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,72 @@
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--void);color:var(--bone);font:400 var(--text-base)/var(--leading-body) var(--font-body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(1200px 700px at 50% -10%,rgba(233,169,87,.07),transparent 60%),radial-gradient(900px 600px at 100% 110%,rgba(199,192,230,.05),transparent 60%)}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:none;box-shadow:var(--ring);border-radius:var(--r-sm)}
+.serif{font-family:var(--font-display);font-weight:400}
+.it{font-style:italic}
+.mono{font-family:var(--font-code)}
+.eyebrow{font:500 var(--text-xs)/1 var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--ash)}
+.foot{font-size:var(--text-xs);color:var(--dust)}
+/* mark + wordmark */
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand svg{width:26px;height:26px;flex:none}
+.brand b{font:400 27px/1 var(--font-spooky);letter-spacing:.01em;color:var(--pumpkin)}
+/* v2: one small cobweb in the app top bar corner; decorative only */
+.topbar-web{position:absolute;top:0;right:0;width:64px;height:56px;overflow:hidden;opacity:.34;pointer-events:none}
+.topbar-web svg{width:64px;height:64px;transform:scaleX(-1);transform-origin:50% 50%}
+.topbar.has-web{padding-right:76px}
+@media (max-width:767px){.topbar-web{width:44px}.topbar-web svg{width:44px;height:44px}.topbar.has-web{padding-right:52px}}
+/* top bar */
+.topbar{position:relative;z-index:5;height:56px;display:flex;align-items:center;gap:var(--s-6);padding:0 var(--s-6);border-bottom:1px solid var(--seam);background:rgba(10,9,12,.82);backdrop-filter:blur(10px)}
+.topbar nav{display:flex;gap:var(--s-6)}
+.topbar nav a{text-decoration:none;color:var(--ash);font-size:var(--text-sm)}
+.topbar nav a:hover{color:var(--bone)}
+.spacer{flex:1}
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:var(--r-sm);border:1px solid var(--seam-strong);background:transparent;color:var(--bone);font:500 var(--text-sm)/1 var(--font-body);text-decoration:none;cursor:pointer;transition:background var(--d-fast) var(--ease-out),border-color var(--d-fast) var(--ease-out),transform var(--d-instant) var(--ease-out)}
+.btn:hover{border-color:var(--ash);background:rgba(255,255,255,.03)}
+.btn:active{transform:translateY(1px)}
+.btn-lg{height:44px;padding:0 20px;font-size:var(--text-base)}
+.btn-candle{position:relative;background:var(--candle);border-color:var(--candle);color:var(--candle-ink)}
+.btn-candle:hover{background:#F0B56A;border-color:#F0B56A}
+.btn-candle:active{background:var(--candle-deep)}
+.btn-candle::after{content:"";position:absolute;inset:-6px;border-radius:14px;box-shadow:0 0 26px rgba(233,169,87,.45);opacity:.5;pointer-events:none;animation:breathe var(--d-breathe) ease-in-out infinite}
+.kbd{font:500 11px/1 var(--font-code);padding:3px 5px;border-radius:4px;background:rgba(0,0,0,.18);}
+.btn-ghost{border-color:transparent;color:var(--ash)}
+.btn-ghost:hover{color:var(--bone);background:rgba(255,255,255,.04);border-color:transparent}
+/* status pill */
+.pill{display:inline-flex;align-items:center;gap:7px;height:26px;padding:0 10px;border-radius:var(--r-pill);border:1px solid var(--seam);font-size:var(--text-xs);color:var(--ash);background:var(--crypt)}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--phosphor);position:relative}
+.pill i::after{content:"";position:absolute;inset:-4px;border-radius:50%;background:var(--phosphor);opacity:.25;animation:breathe var(--d-breathe) ease-in-out infinite}
+.pill.is-summoning i{background:var(--candle)} .pill.is-summoning i::after{background:var(--candle)}
+.pill.is-error i{background:var(--danger)} .pill.is-error i::after{display:none}
+/* chips */
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:var(--r-pill);border:1px solid var(--seam);background:var(--altar);font-size:var(--text-sm);color:var(--ash);cursor:pointer}
+.chip:hover{border-color:var(--seam-strong);color:var(--bone)}
+/* panes */
+.pane{position:relative;background:var(--crypt);border:1px solid var(--seam);border-radius:var(--r-md);box-shadow:var(--shadow-pane);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.pane-h{display:flex;align-items:center;gap:10px;height:44px;padding:0 var(--s-4);border-bottom:1px solid var(--seam);flex:none}
+.pane-h h3{margin:0;font:italic 400 19px/1 var(--font-display);color:var(--bone)}
+.pane-h .meta{font-size:var(--text-xs);color:var(--dust)}
+.icon-btn{width:30px;height:30px;display:grid;place-items:center;border-radius:var(--r-sm);border:1px solid transparent;background:none;color:var(--ash);cursor:pointer}
+.icon-btn:hover{background:rgba(255,255,255,.05);color:var(--bone)}
+.icon-btn svg{width:16px;height:16px}
+/* CRT surface: static scanlines, never animated */
+.crt{background:var(--terminal);position:relative}
+.crt::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(255,255,255,.018) 0 1px,transparent 1px 3px);mix-blend-mode:screen}
+/* motion primitives (opacity/transform only) */
+@keyframes breathe{0%,100%{opacity:.35}50%{opacity:.85}}
+@keyframes flickerIn{0%{opacity:0}55%{opacity:.75}70%{opacity:.5}100%{opacity:1}}
+@keyframes riseIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes lineIn{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
+@keyframes caret{0%,49%{opacity:1}50%,100%{opacity:0}} /* 1.06s cycle < 1Hz */
+.flicker-in{animation:flickerIn var(--d-slow) var(--ease-out) both}
+.rise-in{animation:riseIn var(--d-slow) var(--ease-out) both}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:1ms!important;animation-iteration-count:1!important;transition-duration:1ms!important;scroll-behavior:auto!important}
+  .btn-candle::after,.pill i::after{animation:none!important;opacity:.5}
+}
