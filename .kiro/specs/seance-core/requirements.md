@@ -53,13 +53,13 @@ Visual source of truth: `design/mocks/workspace.html`, `design/mocks/landing.htm
 
 #### Acceptance Criteria
 
-1. WHEN a summon starts, THE Séance_App SHALL send the task and optional CSV header row to Summon_API and set the status pill to "Summoning".
+1. WHEN a summon starts, THE Séance_App SHALL send the task, the `language` field (always `'cobol'` for the MVP), and the optional CSV header row to Summon_API and set the status pill to "Summoning".
 2. WHILE a summon is in progress, THE Séance_App SHALL show the SummoningSkeleton and the line "› The ghost is writing. COBOL takes its time."
 3. WHEN Summon_API returns a program, THE Séance_App SHALL render each line in the CodePane with the `lineIn` entrance and a 40 ms stagger.
 4. THE Summon_API SHALL validate the LLM response against the Program schema and SHALL return HTTP 502 with a plain message IF validation fails twice.
 5. WHERE the LLM reports the task as unsupported, THE Séance_App SHALL show the unsupported-task card in the ghost pane and SHALL NOT call Run_API.
 6. WHEN the user presses Esc during a summon, THE Séance_App SHALL abort the in-flight requests and return to the previous state.
-7. THE Summon_API SHALL reject request bodies larger than 70 KB with HTTP 413.
+7. THE Summon_API SHALL reject request bodies larger than 70 KB with HTTP 413. (Defense-in-depth: the `task ≤ 500 char` schema limit makes this unreachable through normal use, but the body-size guard still applies.)
 
 ### Requirement 4: Run the COBOL program
 
@@ -69,6 +69,7 @@ Visual source of truth: `design/mocks/workspace.html`, `design/mocks/landing.htm
 
 1. WHEN a program is received, THE Séance_App SHALL send its source and the encoded stdin to Run_API.
 2. THE Run_API SHALL return `{ stdout, stderr, exitCode, compileError? }` where every line number in `compileError` refers to the source lines the user sees.
+2a. IF the `language` field in a Run_API request is `'fortran'` or `'basic'`, THE Run_API SHALL reject it with HTTP 400 and the message "This spirit is resting." (These languages are reserved for a future release; the schema accepts the union for forward compatibility.)
 3. WHEN the run succeeds, THE Séance_App SHALL print the output in the RunOutput pane in VT323 with the `flickerIn` entrance applied once to the Result_Line.
 4. IF the program fails to compile, THEN THE Séance_App SHALL show the compile-error state with the offending line underlined and the actions "Let the ghost fix it" and "Edit the task".
 5. IF the run exceeds the runner time limit, THEN THE Séance_App SHALL show the timeout state "The program ran, then stopped answering after N seconds."
@@ -148,7 +149,7 @@ Visual source of truth: `design/mocks/workspace.html`, `design/mocks/landing.htm
 
 #### Acceptance Criteria
 
-1. THE Séance_App SHALL serve the landing page at `/` matching `design/mocks/landing.html`, and the workspace at `/seance`.
+1. THE Séance_App SHALL serve the landing page at `/` matching `design/mocks/landing.html`, and the workspace at `/seance`. (Route `/seance` is the canonical workspace path.)
 2. WHEN the user clicks "Begin a séance", THE Séance_App SHALL open `/seance` with the empty state.
 3. THE Séance_App SHALL show the footnote "Python runs in your browser. COBOL runs on a real GnuCOBOL compiler. Generated code is for learning, not production."
 4. THE Séance_App SHALL NOT show any statistic without a visible source link.
@@ -160,6 +161,6 @@ Visual source of truth: `design/mocks/workspace.html`, `design/mocks/landing.htm
 #### Acceptance Criteria
 
 1. THE Summon_API, Narrate_API and Run_API SHALL read secrets only from server environment variables.
-2. THE Run_API SHALL reject COBOL source longer than 20 000 characters or stdin longer than 70 000 characters with HTTP 413.
+2. THE Run_API SHALL reject COBOL source longer than 20 000 **characters** or stdin longer than 70 000 **characters** with HTTP 413. (Character limits, matching the `RunReq` schema in design.md — not byte counts.)
 3. THE Summon_API, Narrate_API and Run_API SHALL apply a best-effort per-IP limit of 10 requests per minute and return HTTP 429 above it.
 4. THE Summon_API and Narrate_API SHALL cache successful responses by a hash of their inputs for the lifetime of the function instance.

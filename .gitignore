@@ -5,6 +5,7 @@
 # dependencies and builds
 node_modules/
 dist/
+dist-ssr/
 coverage/
 .vite/
 playwright-report/
@@ -20,3 +21,14 @@ test-results/
 .DS_Store
 Thumbs.db
 *.log
+*.local
+
+# editor project files (from Vite template)
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
