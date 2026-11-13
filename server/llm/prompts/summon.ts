@@ -7,8 +7,8 @@
  *   .kiro/steering/cobol-primer.md
  */
 
-import type { SummonReq } from '../../../src/lib/schemas.ts'
-import type { FormatIssue } from '../../../src/lib/cobolFormat.ts'
+import type { SummonReq } from '../../../src/lib/schemas.js'
+import type { FormatIssue } from '../../../src/lib/cobolFormat.js'
 
 // ---------------------------------------------------------------------------
 // System prompt

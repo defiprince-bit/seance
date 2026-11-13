@@ -14,7 +14,7 @@
  *   - Throws on network or non-2xx errors.
  */
 
-import { withNetworkRetry } from '../../src/lib/retry.ts'
+import { withNetworkRetry } from '../../src/lib/retry.js'
 
 // ---------------------------------------------------------------------------
 // Types

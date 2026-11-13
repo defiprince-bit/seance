@@ -10,16 +10,16 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { SummonReqSchema, SummonResSchema, isSummonSuccess } from '../src/lib/schemas.ts'
-import type { SummonRes } from '../src/lib/schemas.ts'
-import { lintFixedFormat } from '../src/lib/cobolFormat.ts'
-import { getLlmConfig, chatComplete, extractJson } from '../server/llm/client.ts'
-import type { ChatMessage } from '../server/llm/client.ts'
+import { SummonReqSchema, SummonResSchema, isSummonSuccess } from '../src/lib/schemas.js'
+import type { SummonRes } from '../src/lib/schemas.js'
+import { lintFixedFormat } from '../src/lib/cobolFormat.js'
+import { getLlmConfig, chatComplete, extractJson } from '../server/llm/client.js'
+import type { ChatMessage } from '../server/llm/client.js'
 import {
   SUMMON_SYSTEM_PROMPT,
   buildSummonUserPrompt,
   buildSummonRepairPrompt,
-} from '../server/llm/prompts/summon.ts'
+} from '../server/llm/prompts/summon.js'
 
 // ---------------------------------------------------------------------------
 // In-memory response cache  (Req 12.4)

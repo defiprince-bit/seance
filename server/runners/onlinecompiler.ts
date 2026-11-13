@@ -17,9 +17,9 @@
  *  OnlineCompiler.io sets exit_code = 124 when the time limit is exceeded.
  */
 
-import { remapCompilerMessage, firstErrorLine } from '../../src/lib/lineOffset.ts'
-import { withNetworkRetry } from '../../src/lib/retry.ts'
-import type { Run } from '../../src/lib/schemas.ts'
+import { remapCompilerMessage, firstErrorLine } from '../../src/lib/lineOffset.js'
+import { withNetworkRetry } from '../../src/lib/retry.js'
+import type { Run } from '../../src/lib/schemas.js'
 
 // ---------------------------------------------------------------------------
 // Types for the OnlineCompiler.io wire format

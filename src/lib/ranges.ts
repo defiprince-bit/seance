@@ -3,7 +3,7 @@
  * Pure functions for 1-based inclusive line ranges.
  * No React, no fetch — safe to property-test in Node.
  */
-import type { Step } from './schemas.ts'
+import type { Step } from './schemas.js'
 
 /** A 1-based inclusive line range [first, last]. */
 export type Range = [number, number]

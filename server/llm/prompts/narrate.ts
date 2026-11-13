@@ -7,8 +7,8 @@
  *   .kiro/steering/seance-design.md     (Ghost copy voice)
  */
 
-import type { NarrateReq } from '../../../src/lib/schemas.ts'
-import type { StepValidationError } from '../../../src/lib/ranges.ts'
+import type { NarrateReq } from '../../../src/lib/schemas.js'
+import type { StepValidationError } from '../../../src/lib/ranges.js'
 
 // ---------------------------------------------------------------------------
 // System prompt

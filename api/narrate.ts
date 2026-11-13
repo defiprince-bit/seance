@@ -10,15 +10,15 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { NarrateReqSchema, NarrateResSchema } from '../src/lib/schemas.ts'
-import { validateSteps } from '../src/lib/ranges.ts'
-import { getLlmConfig, chatComplete, extractJson } from '../server/llm/client.ts'
-import type { ChatMessage } from '../server/llm/client.ts'
+import { NarrateReqSchema, NarrateResSchema } from '../src/lib/schemas.js'
+import { validateSteps } from '../src/lib/ranges.js'
+import { getLlmConfig, chatComplete, extractJson } from '../server/llm/client.js'
+import type { ChatMessage } from '../server/llm/client.js'
 import {
   NARRATE_SYSTEM_PROMPT,
   buildNarrateUserPrompt,
   buildRepairPrompt,
-} from '../server/llm/prompts/narrate.ts'
+} from '../server/llm/prompts/narrate.js'
 
 // ---------------------------------------------------------------------------
 // In-memory response cache  (Req 12.4)

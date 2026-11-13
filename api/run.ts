@@ -10,8 +10,8 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { RunReqSchema } from '../src/lib/schemas.ts'
-import { runCobol } from '../server/runners/onlinecompiler.ts'
+import { RunReqSchema } from '../src/lib/schemas.js'
+import { runCobol } from '../server/runners/onlinecompiler.js'
 
 // ---------------------------------------------------------------------------
 // Handler

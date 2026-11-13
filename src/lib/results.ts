@@ -7,7 +7,7 @@
  *   - LABEL: one or more non-whitespace characters before the colon
  *   - value: everything after ": " trimmed
  */
-import type { Agreement } from './schemas.ts'
+import type { Agreement } from './schemas.js'
 
 // ---------------------------------------------------------------------------
 // parseResultLines
