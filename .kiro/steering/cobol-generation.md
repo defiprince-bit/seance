@@ -9,9 +9,10 @@ Load this whenever prompts, LLM adapters or golden fixtures are edited.
 
 ## COBOL the model must produce
 - GnuCOBOL 3.x compatible, COBOL-85 style, **fixed format**: columns 1–6 sequence area (blank or numbers), column 7 indicator (`*` for comments), code in columns 8–72. No tabs.
+- **No continuation lines.** Column 7 is only ever a space or `*`, never `-`. To continue a statement, start the next line in Area B (column 12+) with no marker. Divisions have no END marker (never `END-IDENTIFICATION` etc.).
 - Four divisions in order: IDENTIFICATION, ENVIRONMENT, DATA, PROCEDURE. `PROGRAM-ID` in kebab or upper case.
 - Read input **only** with `ACCEPT` from stdin, following the stdin protocol (first line = record count N, then N lines). No `SELECT`/`FD` files, no `CALL` to C, no `SYSTEM`.
-- Money and decimals use `PIC S9(n)V99` and are displayed through an edited picture (`PIC Z(n)9.99` or `-Z(n)9.99`).
+- Money and decimals use `PIC S9(n)V99` and are displayed through an edited picture (`PIC Z(n)9.99` or `-Z(n)9.99`): `MOVE` the value to an edited field such as `WS-TOTAL-OUT PIC Z(6)9.99`, then `DISPLAY` that field. There is no `EDITED` keyword; never put a picture string in a `DISPLAY`.
 - Output ends with one or more **result lines** in the exact form `LABEL: value` (label in upper case letters, digits and spaces). Example: `TOTAL SALES:      5871.50`. Other DISPLAY lines are allowed before them.
 - At most 120 lines. Comment the intent of each paragraph in one `*` line.
 - Must end with `STOP RUN.`

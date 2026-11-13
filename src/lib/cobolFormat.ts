@@ -6,12 +6,14 @@
  * for one repair attempt.
  *
  *   cols 1–6  sequence area (blank or digits)
- *   col  7    indicator: space, * comment, - continuation, / page, D debug
+ *   col  7    indicator: space, * comment, / page, D debug
+ *             ("-" continuation is valid COBOL but rejected here, see below)
  *   cols 8–72 Areas A and B
  *   cols 73+  ignored by the compiler, so code there is silently lost
  */
 
-export type FormatIssueKind = 'tab' | 'too-long' | 'comment-column' | 'sequence-area' | 'indicator'
+export type FormatIssueKind =
+  | 'tab' | 'too-long' | 'comment-column' | 'continuation' | 'sequence-area' | 'indicator'
 
 export interface FormatIssue {
   line: number // 1-based
@@ -19,7 +21,9 @@ export interface FormatIssue {
   detail: string
 }
 
-const INDICATORS = new Set([' ', '*', '-', '/', 'D', 'd'])
+// "-" (continuation) is deliberately absent: Séance never uses continuation
+// lines, because the model gets them wrong and GnuCOBOL glues the text on.
+const INDICATORS = new Set([' ', '*', '/', 'D', 'd'])
 
 export function lintFixedFormat(lines: readonly string[]): FormatIssue[] {
   const issues: FormatIssue[] = []
@@ -41,6 +45,16 @@ export function lintFixedFormat(lines: readonly string[]): FormatIssue[] {
         line: n,
         kind: 'comment-column',
         detail: `* is in column ${firstText + 1}; a comment needs exactly 6 spaces then * in column 7`,
+      })
+      return
+    }
+
+    // a "-" continuation marker in column 7, or misplaced anywhere in columns 1–6
+    if (line[firstText] === '-' && firstText <= 6) {
+      issues.push({
+        line: n,
+        kind: 'continuation',
+        detail: `uses a "-" continuation marker in column ${firstText + 1}. Never use continuation lines: delete the "-" and start this line in Area B (column 12 or later) with no marker`,
       })
       return
     }

@@ -52,10 +52,20 @@ Shape 2 — unsupported task:
     statement     ...........ADD WS-AMOUNT TO WS-TOTAL      (11 spaces, text from column 12)
   A * in column 8 or later is NOT a comment and will not compile.
   No line may be longer than 72 characters: the compiler ignores everything after
-  column 72, which silently cuts names in half. Split long statements, e.g.
+  column 72, which silently cuts names in half.
+- NEVER use continuation lines. Column 7 holds only a space or *, never "-".
+  A "-" in column 7 glues the line onto the previous one (e.g. "1UNTIL") and breaks
+  the program. To continue a statement, just start the next line in Area B
+  (column 12 or later) with no marker; COBOL statements may span lines freely:
     ...........PERFORM VARYING WS-I FROM 1 BY 1
     ...............UNTIL WS-I > WS-COUNT
-  Do not write an AUTHOR paragraph.
+    ...........UNSTRING WS-LINE DELIMITED BY ","
+    ...............INTO WS-REGION WS-AMOUNT-TXT
+    ...........END-UNSTRING
+  Wrong:  ......-    UNTIL WS-I > WS-COUNT
+  Wrong:  .....-     WS-REGION WS-AMOUNT-TXT
+- Do not write an AUTHOR paragraph. Divisions have no END marker: never write
+  END-IDENTIFICATION, END-ENVIRONMENT, END-DATA or END-PROCEDURE.
 - Inside PERFORM ... END-PERFORM, IF ... END-IF and UNSTRING ... END-UNSTRING,
   statements have NO period. Put a period only at the end of a paragraph or sentence.
 - Four divisions in order: IDENTIFICATION, ENVIRONMENT, DATA, PROCEDURE.
@@ -73,7 +83,14 @@ Shape 2 — unsupported task:
     END-PERFORM
   Never test for end of file; the count tells you how many rows to read.
   If the task takes no input, do not ACCEPT anything.
-- Money and decimals: use PIC S9(n)V99 internally; display through edited PIC Z(n)9.99.
+- Money and decimals: keep them in PIC S9(n)V99 fields. To print one, MOVE it to an
+  edited field declared in WORKING-STORAGE, then DISPLAY that field:
+    .......01  WS-TOTAL      PIC S9(7)V99 VALUE ZERO.
+    .......01  WS-TOTAL-OUT  PIC Z(6)9.99.
+    ...........MOVE WS-TOTAL TO WS-TOTAL-OUT
+    ...........DISPLAY "TOTAL SALES: " WS-TOTAL-OUT
+  There is no EDITED keyword. Never write DISPLAY X EDITED "ZZZ9.99" or put a
+  picture string inside DISPLAY; the picture belongs on the PIC of a field.
 - Output: end with one or more result lines in the exact form  LABEL: value
   (LABEL in upper-case letters/digits/spaces). Example:  TOTAL SALES:      5871.50
   Other DISPLAY lines before the result lines are fine.
