@@ -1,45 +1,65 @@
 /**
  * src/lib/stdin.ts
- * Stdin encoding/decoding for the COBOL and Python runners.
+ * The stdin protocol shared by COBOL (runner) and Python (Pyodide).
+ * Spec: .kiro/specs/proof-runner/design.md, steering cobol-generation.md
  *
- * Protocol (mirrors proof-runner spec):
- *   - Each logical "record" is one line of stdin fed to the program.
- *   - When a CSV is attached, each data row (excluding the header) becomes
- *     one line, with fields joined by commas — the program reads them with
- *     ACCEPT … FROM CONSOLE or Python's input().
- *   - The encoded form is the raw lines joined by '\n', terminated with a
- *     final '\n' so the last ACCEPT does not block.
- *   - When there is no CSV, the encoded form is an empty string (programs
- *     that need no input work fine with an empty stdin).
+ *   <N>\n          number of data rows, on its own line
+ *   <row 1>\n
+ *   ...
+ *   <row N>\n
  *
- * Both COBOL (via the runner) and Python (Pyodide) receive the same encoded
- * string so their outputs are deterministically comparable.
+ * COBOL reads N with ACCEPT, then PERFORM N TIMES with ACCEPT of one row.
+ * Python reads int(sys.stdin.readline()) then N lines. No EOF handling needed.
+ *
+ * Encoder rules (proof-runner Req 2):
+ *   - line endings normalised to \n
+ *   - CSV header row dropped
+ *   - trailing empty lines trimmed (blank rows in the middle are kept, so the
+ *     count always equals the rows actually sent)
+ *   - no CSV (or header only) → "0\n"
  */
 
-/**
- * Encodes a CSV body (all text after the header row) into a stdin string.
- * Pass undefined or an empty string for programs that need no CSV input.
- *
- * @param csvText  The full CSV text including the header row, or undefined.
- * @returns  A newline-terminated string ready to pipe as stdin.
- */
-export function encodeStdin(csvText?: string): string {
-  if (!csvText || csvText.trim() === '') return ''
-
-  const lines = csvText.split('\n')
-  // Drop the header row (index 0), strip carriage returns, skip blank lines
-  const dataRows = lines.slice(1).map((l) => l.replace(/\r$/, '')).filter((l) => l.trim() !== '')
-
-  if (dataRows.length === 0) return ''
-
-  return dataRows.join('\n') + '\n'
+/** Splits text into lines with \r\n and lone \r normalised to \n. */
+function toLines(text: string): string[] {
+  return text.replace(/\r\n?/g, '\n').split('\n')
 }
 
 /**
- * Decodes a stdin string back into the individual record lines.
- * Returns an empty array for empty/whitespace-only input.
+ * Encodes a CSV (header row included) into protocol stdin.
+ *
+ * @param csvText  Full CSV text including the header row, or undefined.
+ * @returns        "N\n" followed by the N data rows, each newline-terminated.
+ */
+export function encodeStdin(csvText?: string): string {
+  if (csvText === undefined || csvText.trim() === '') return '0\n'
+
+  const rows = toLines(csvText).slice(1) // drop header
+  while (rows.length > 0 && rows[rows.length - 1].trim() === '') rows.pop()
+
+  if (rows.length === 0) return '0\n'
+  return `${rows.length}\n${rows.join('\n')}\n`
+}
+
+/**
+ * Decodes protocol stdin back into the data rows (count line removed).
+ * Returns [] for empty input. Throws if the first line is not a row count
+ * or fewer rows follow than the count promises.
  */
 export function decodeStdin(encoded: string): string[] {
-  if (!encoded || encoded.trim() === '') return []
-  return encoded.split('\n').filter((l) => l !== '')
+  if (encoded.trim() === '') return []
+
+  const lines = toLines(encoded)
+  // the '' after the final newline is a terminator, not a row
+  if (lines[lines.length - 1] === '') lines.pop()
+  const head = lines[0].trim()
+  if (!/^\d+$/.test(head)) {
+    throw new Error(`stdin must start with a row count, got "${lines[0]}"`)
+  }
+
+  const count = Number(head)
+  const rows = lines.slice(1, 1 + count)
+  if (rows.length < count) {
+    throw new Error(`stdin promised ${count} rows but carried ${rows.length}`)
+  }
+  return rows
 }

@@ -10,9 +10,16 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { SummonReqSchema, SummonResSchema } from '../src/lib/schemas.ts'
+import { SummonReqSchema, SummonResSchema, isSummonSuccess } from '../src/lib/schemas.ts'
+import type { SummonRes } from '../src/lib/schemas.ts'
+import { lintFixedFormat } from '../src/lib/cobolFormat.ts'
 import { getLlmConfig, chatComplete, extractJson } from '../server/llm/client.ts'
-import { SUMMON_SYSTEM_PROMPT, buildSummonUserPrompt } from '../server/llm/prompts/summon.ts'
+import type { ChatMessage } from '../server/llm/client.ts'
+import {
+  SUMMON_SYSTEM_PROMPT,
+  buildSummonUserPrompt,
+  buildSummonRepairPrompt,
+} from '../server/llm/prompts/summon.ts'
 
 // ---------------------------------------------------------------------------
 // In-memory response cache  (Req 12.4)
@@ -68,13 +75,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: message })
   }
 
-  const messages = [
-    { role: 'system' as const, content: SUMMON_SYSTEM_PROMPT },
-    { role: 'user' as const, content: buildSummonUserPrompt(summonReq) },
+  const messages: ChatMessage[] = [
+    { role: 'system', content: SUMMON_SYSTEM_PROMPT },
+    { role: 'user', content: buildSummonUserPrompt(summonReq) },
   ]
 
-  // ── LLM call with one retry on invalid JSON (Req 3.4) ─────────────────────
+  // ── LLM call with one retry (Req 3.4) ─────────────────────────────────────
+  // Invalid JSON / schema → plain retry. Fixed-format column problems → repair
+  // retry that lists the bad lines. If the repair still has column problems,
+  // the program is returned anyway so the real compiler error reaches the UI.
   let lastError = ''
+  let unlinted: SummonRes | undefined
 
   for (let attempt = 0; attempt < 2; attempt++) {
     let raw: string
@@ -105,10 +116,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       continue // retry
     }
 
+    // Fixed-format column check (not run for unsupported answers)
+    if (isSummonSuccess(validated.data)) {
+      const issues = lintFixedFormat(validated.data.program.lines)
+      if (issues.length > 0) {
+        unlinted = validated.data
+        lastError = `Fixed-format issues (attempt ${attempt + 1}): line ${issues[0].line} ${issues[0].detail}`
+        messages.push({ role: 'assistant', content: raw })
+        messages.push({ role: 'user', content: buildSummonRepairPrompt(issues) })
+        continue // repair retry
+      }
+    }
+
     // Success — cache and return
     responseCache.set(key, validated.data)
     return res.status(200).json(validated.data)
   }
+
+  // Repair still had column problems: return it uncached and let the compiler speak
+  if (unlinted) return res.status(200).json(unlinted)
 
   // Both attempts failed (Req 3.4: return 502 with plain message)
   return res.status(502).json({

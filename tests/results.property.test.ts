@@ -211,6 +211,26 @@ describe('parseResultLines – example tests', () => {
     expect(map.get('AMOUNT')).toBe('1120.00')
   })
 
+  // regression: labels with spaces were ignored, so a live sales séance whose
+  // runs both printed 5871.50 showed "No result line to compare."
+  it('parses labels with spaces, as in the steering example', () => {
+    expect(parseResultLines('TOTAL SALES:      5871.50\n').get('TOTAL SALES')).toBe('5871.50')
+  })
+
+  it('live sales séance output agrees (COBOL edited vs Python f-string)', () => {
+    const a = agree('TOTAL SALES:   5871.50\n', 'TOTAL SALES:   5871.50')
+    expect(a.status).toBe('match')
+    expect(a.cobolValue?.trim()).toBe('5871.50')
+  })
+
+  it('treats repeated spaces inside a label as one', () => {
+    expect(agree('TOTAL  SALES: 1.00', 'TOTAL SALES: 1.00').status).toBe('match')
+  })
+
+  it('ignores ordinary prose lines that contain a colon', () => {
+    expect(parseResultLines('Reading input: 4 rows\n').size).toBe(0)
+  })
+
   it('returns empty map for stdout with no Result_Lines', () => {
     expect(parseResultLines('Hello, World!\n').size).toBe(0)
   })

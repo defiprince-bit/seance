@@ -20,8 +20,9 @@ COBOL program and return a JSON object with three fields:
 
 1. "steps": an array of narration steps (4–10) that walk through the program.
 2. "python": an array of Python translation lines, one per logical statement.
-3. "note": (optional) a one-sentence note if the translation changes semantics \
-(e.g. fixed-point COBOL → Python Decimal). Omit if no semantic change.
+3. "note": a one-sentence translator's note. REQUIRED whenever the Python uses \
+decimal.Decimal (say that COBOL keeps exact fixed-point decimals and Python mirrors \
+them with Decimal, truncating like COBOL). Omit only if there is no decimal arithmetic.
 
 ## Output format — return ONLY this JSON, no prose, no fences
 
@@ -48,10 +49,35 @@ COBOL program and return a JSON object with three fields:
 - "text": name the real COBOL concept (ACCEPT, PIC, PERFORM, UNSTRING, etc.) and its Python equivalent. Under 40 words. No emoji. Keep the tone dry, warm and professional — no Halloween clichés, no exclamations, no the-ghost-is-scary theatrics.
 
 ## Python translation rules
-- Python 3, standard library only.
-- Use decimal.Decimal for any value that was fixed-point in COBOL (PIC V99, etc.).
-- Read stdin with sys.stdin following the same record-count protocol as the COBOL.
-- Print result lines in the same format: LABEL: value.
+- Python 3, standard library only. The Python must print EXACTLY the same result values \
+as the COBOL, digit for digit. A faithful translation reproduces COBOL's arithmetic, not \
+the "mathematically ideal" answer.
+- Stdin protocol (identical bytes go to both programs):
+    n = int(sys.stdin.readline())
+    for _ in range(n):
+        row = sys.stdin.readline().rstrip("\\n")
+  The first line is the row count; the CSV header is never on stdin. Never loop until EOF.
+  If the COBOL does not ACCEPT anything, do not read stdin.
+
+## Exact COBOL arithmetic in Python (mandatory)
+- Never use float. Every numeric COBOL field becomes a decimal.Decimal.
+- Set getcontext().prec = 50 once, so intermediates keep extra precision like GnuCOBOL.
+- A field's scale comes from its PIC: V99 or .99 → Decimal("0.01"); no V → Decimal("1").
+- Every statement that STORES into a field (MOVE, COMPUTE, ADD, SUBTRACT, MULTIPLY, \
+DIVIDE, including GIVING) must quantize the stored value to that field's scale, at that \
+statement, in the same order the COBOL runs:
+    - without ROUNDED: x = (expr).quantize(Decimal("0.01"), rounding=ROUND_DOWN)
+    - with ROUNDED:    x = (expr).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+  Do NOT quantize only once at the end, and do NOT replace a loop that truncates each \
+iteration with a closed formula like principal * (1 + rate) ** years. Keep the loop.
+- An unsigned field (PIC 9 without S) stores the absolute value; mirror that with abs().
+- FUNCTION NUMVAL(text) → Decimal(text.strip()). Literal constants → Decimal("1.05"), never Decimal(1.05).
+- Display: an edited PIC like Z(6)9.99 prints the stored value with its scale, so print \
+f"LABEL: {value}" where value is already quantized (e.g. 5871.50, not 5871.5). Use the \
+same LABEL text as the COBOL DISPLAY.
+
+## Other output rules
+- Print result lines in the same format and order: LABEL: value.
 - "maps": the COBOL line range [a, b] this Python line translates, or null for pure Python plumbing (imports, if __name__ == "__main__", blank lines).
 - Every structural Python line should have a maps entry. Never leave maps as null for a line that corresponds to real COBOL logic.
 

@@ -272,6 +272,22 @@ describe('NARRATE_SYSTEM_PROMPT', () => {
     expect(NARRATE_SYSTEM_PROMPT).toContain('Decimal')
   })
 
+  // regression: compound interest printed 1628.86 in COBOL but 1628.89 in Python
+  it('requires per-statement truncation like COBOL, not one rounding at the end', () => {
+    expect(NARRATE_SYSTEM_PROMPT).toContain('ROUND_DOWN')
+    expect(NARRATE_SYSTEM_PROMPT).toContain('ROUND_HALF_UP')
+    expect(NARRATE_SYSTEM_PROMPT).toMatch(/Do NOT quantize only once at the end/)
+    expect(NARRATE_SYSTEM_PROMPT).toMatch(/Never use float/)
+  })
+
+  it('tells the Python to read the count line first', () => {
+    expect(NARRATE_SYSTEM_PROMPT).toContain('n = int(sys.stdin.readline())')
+  })
+
+  it('makes the translator note required when Decimal is used', () => {
+    expect(NARRATE_SYSTEM_PROMPT).toMatch(/REQUIRED whenever the Python uses/)
+  })
+
   it('does not contain banned words', () => {
     const banned = ['Ouija', 'boo', 'spooky', 'mwahaha', 'AI magic']
     for (const word of banned) {

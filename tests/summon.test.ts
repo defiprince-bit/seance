@@ -198,6 +198,31 @@ describe('SummonResSchema', () => {
 })
 
 // ---------------------------------------------------------------------------
+// Prompt ↔ schema contract (regression: the prompt once showed a bare program,
+// which SummonResSchema rejects, so every live summon returned 502)
+// ---------------------------------------------------------------------------
+
+describe('SUMMON_SYSTEM_PROMPT matches SummonResSchema', () => {
+  it('the success example in the prompt nests the program under "program"', async () => {
+    const { SUMMON_SYSTEM_PROMPT } = await import('../server/llm/prompts/summon.ts')
+    expect(SUMMON_SYSTEM_PROMPT).toMatch(/"program"\s*:\s*\{/)
+  })
+
+  it('a response shaped like the prompt example validates', () => {
+    const example = {
+      program: {
+        language: 'cobol',
+        dialect: 'cobol85-fixed',
+        filename: 'compound-interest.cob',
+        title: 'Compound interest',
+        lines: ['       IDENTIFICATION DIVISION.'],
+      },
+    }
+    expect(SummonResSchema.safeParse(example).success).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // buildSummonUserPrompt
 // ---------------------------------------------------------------------------
 
@@ -215,6 +240,37 @@ describe('buildSummonUserPrompt', () => {
     })
     expect(prompt).toContain('region,amount')
     expect(prompt).toContain('stdin')
+  })
+
+  // regression: the model refused CSV tasks because the header/count rules were unclear
+  it('tells the model the header is not on stdin and the count comes first', () => {
+    const prompt = buildSummonUserPrompt({ task: 'Total sales', language: 'cobol', csvHeader: 'region,amount' })
+    expect(prompt).toMatch(/not on stdin/)
+    expect(prompt).toMatch(/row count N first/)
+  })
+
+  it('repair prompt lists each bad line', async () => {
+    const { buildSummonRepairPrompt } = await import('../server/llm/prompts/summon.ts')
+    const prompt = buildSummonRepairPrompt([
+      { line: 5, kind: 'comment-column', detail: '* is in column 8' },
+      { line: 21, kind: 'too-long', detail: 'is 73 columns' },
+    ])
+    expect(prompt).toContain('line 5 * is in column 8')
+    expect(prompt).toContain('line 21 is 73 columns')
+  })
+
+  // regression: the model put * in column 8, which GnuCOBOL rejects in fixed format
+  it('system prompt shows the comment template with * in column 7', async () => {
+    const { SUMMON_SYSTEM_PROMPT } = await import('../server/llm/prompts/summon.ts')
+    expect(SUMMON_SYSTEM_PROMPT).toContain('......* ')
+    expect(SUMMON_SYSTEM_PROMPT).toMatch(/A \* in column 8 or later is NOT a comment/)
+  })
+
+  it('system prompt spells out the count-first read pattern', async () => {
+    const { SUMMON_SYSTEM_PROMPT } = await import('../server/llm/prompts/summon.ts')
+    expect(SUMMON_SYSTEM_PROMPT).toContain('ACCEPT WS-COUNT')
+    expect(SUMMON_SYSTEM_PROMPT).toContain('PERFORM WS-COUNT TIMES')
+    expect(SUMMON_SYSTEM_PROMPT).toMatch(/header row is NEVER sent on stdin/)
   })
 
   it('does not mention CSV when csvHeader is absent', () => {

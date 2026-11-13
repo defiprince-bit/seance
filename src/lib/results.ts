@@ -19,12 +19,20 @@ import type { Agreement } from './schemas.ts'
  *
  * Lines that do not match are ignored (COBOL programs print labels and noise).
  */
+/**
+ * Result_Line: "LABEL: value". Per cobol-generation.md the label is upper-case
+ * letters, digits and spaces (e.g. "TOTAL SALES"); hyphens are also accepted.
+ * Exported so the UI highlights exactly the lines agree() compares.
+ */
+export const RESULT_LINE = /^\s*([A-Z0-9][A-Z0-9 -]*?)\s*:\s*(\S.*)$/
+
 export function parseResultLines(stdout: string): Map<string, string> {
   const result = new Map<string, string>()
-  for (const line of stdout.split('\n')) {
-    const match = /^(\S+):\s+(.+)$/.exec(line.trimEnd())
+  for (const line of stdout.replace(/\r\n?/g, '\n').split('\n')) {
+    const match = RESULT_LINE.exec(line.trimEnd())
     if (match) {
-      result.set(match[1], match[2].trim())
+      // collapse runs of spaces so "TOTAL  SALES" and "TOTAL SALES" are one label
+      result.set(match[1].replace(/\s+/g, ' '), match[2].trim())
     }
   }
   return result
