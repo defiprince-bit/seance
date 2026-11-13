@@ -12,7 +12,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { NarrateReqSchema, NarrateResSchema } from '../src/lib/schemas.js'
 import { validateSteps } from '../src/lib/ranges.js'
-import { getLlmConfig, chatComplete, extractJson } from '../server/llm/client.js'
+import { getLlmConfig, chatComplete, extractJson, LlmError } from '../server/llm/client.js'
 import type { ChatMessage } from '../server/llm/client.js'
 import {
   NARRATE_SYSTEM_PROMPT,
@@ -60,7 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // ── LLM config (keys from env only) ───────────────────────────────────────
   let llmConfig
   try {
-    llmConfig = getLlmConfig()
+    llmConfig = getLlmConfig('narrate') // LLM_NARRATE_MODEL, falling back to LLM_MODEL
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
     return res.status(500).json({ error: message })
@@ -81,10 +81,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       raw = await chatComplete(messages, llmConfig, /* jsonMode= */ true)
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err)
-      if (message.includes('429') || message.includes('503')) {
+      // the provider rejected the model's JSON: same as invalid JSON, use the retry
+      if (err instanceof LlmError && err.kind === 'bad-json') {
+        lastError = `The provider rejected the model's JSON (attempt ${attempt + 1})`
+        continue
+      }
+      if (err instanceof LlmError && err.kind === 'rate-limited') {
         return res.status(429).json({ error: 'LLM provider is busy. Try again shortly.' })
       }
+      const message = err instanceof Error ? err.message : String(err)
       return res.status(502).json({ error: `LLM error: ${message}` })
     }
 

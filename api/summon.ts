@@ -13,7 +13,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { SummonReqSchema, SummonResSchema, isSummonSuccess } from '../src/lib/schemas.js'
 import type { SummonRes } from '../src/lib/schemas.js'
 import { lintFixedFormat } from '../src/lib/cobolFormat.js'
-import { getLlmConfig, chatComplete, extractJson } from '../server/llm/client.js'
+import { getLlmConfig, chatComplete, extractJson, LlmError } from '../server/llm/client.js'
 import type { ChatMessage } from '../server/llm/client.js'
 import {
   SUMMON_SYSTEM_PROMPT,
@@ -92,11 +92,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       raw = await chatComplete(messages, llmConfig, /* jsonMode= */ true)
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err)
-      // Surface 429 / 5xx from the LLM provider
-      if (message.includes('429') || message.includes('503')) {
+      // the provider rejected the model's JSON: same as invalid JSON, use the retry
+      if (err instanceof LlmError && err.kind === 'bad-json') {
+        lastError = `The provider rejected the model's JSON (attempt ${attempt + 1})`
+        continue
+      }
+      if (err instanceof LlmError && err.kind === 'rate-limited') {
         return res.status(429).json({ error: 'LLM provider is busy. Try again shortly.' })
       }
+      const message = err instanceof Error ? err.message : String(err)
       return res.status(502).json({ error: `LLM error: ${message}` })
     }
 

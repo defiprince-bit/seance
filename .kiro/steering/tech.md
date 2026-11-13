@@ -21,6 +21,7 @@ inclusion: always
 
 ## Environment variables (server only)
 - `LLM_API_KEY`, `LLM_BASE_URL` (default `https://api.groq.com/openai/v1`), `LLM_MODEL`
+- `LLM_NARRATE_MODEL` (optional; narration model, falls back to `LLM_MODEL`. On Groq, `openai/gpt-oss-20b` has its own tokens-per-minute bucket)
 - `RUNNER_KIND` = `onlinecompiler` | `selfhost` | `fixtures`
 - `ONLINECOMPILER_API_KEY` (when `RUNNER_KIND=onlinecompiler`)
 - `SELFHOST_RUNNER_URL`, `SELFHOST_RUNNER_TOKEN` (when `RUNNER_KIND=selfhost`)
