@@ -18,6 +18,8 @@ interface CodePaneProps {
   filename?: string
   /** compile error: line to mark and token to underline */
   errorAt?: { line: number; token?: string }
+  /** a golden séance is replaying (Req 2.3) */
+  cached?: boolean
 }
 
 const Mark = () => (
@@ -35,7 +37,7 @@ function Marked({ text, token }: { text: string; token?: string }) {
   return <>{text.slice(0, at)}<span className={s.token}>{text.slice(at, at + token!.length)}</span>{text.slice(at + token!.length)}</>
 }
 
-export function CodePane({ lines, activeRange: stepRange, streaming, filename, errorAt }: CodePaneProps) {
+export function CodePane({ lines, activeRange: stepRange, streaming, filename, errorAt, cached }: CodePaneProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
   // a compile error takes over the highlight: the planchette points at the broken line
   const activeRange: Range | null = errorAt ? [errorAt.line, errorAt.line] : stepRange
@@ -59,7 +61,7 @@ export function CodePane({ lines, activeRange: stepRange, streaming, filename, e
     <section className={s.pane} aria-label="COBOL program">
       <div className={s.paneH}>
         <h3 className={s.paneTitle}>COBOL</h3>
-        {filename && <span className={s.meta}>{filename} · {lines.length} lines</span>}
+        {filename && <span className={s.meta}>{filename} · {lines.length} lines{cached ? ' · cached séance' : ''}</span>}
       </div>
       <div className={`${s.codewrap} crt`} ref={wrapRef}>
         <div className={s.code}>

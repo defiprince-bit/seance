@@ -1,4 +1,5 @@
 /** Chip — 28px suggestion pill on altar. */
+import { CHIP_LABELS } from '../lib/golden.ts'
 import s from './Chip.module.css'
 
 interface ChipProps {
@@ -12,12 +13,8 @@ export function Chip({ label, onClick }: ChipProps) {
   )
 }
 
-export const SUGGESTIONS = [
-  'Total the sales in a CSV',
-  'Compound interest for 10 years',
-  'Sort a list of names',
-  'Payroll with overtime',
-] as const
+/** The four chip labels (Req 2.1), from the one list the golden séances use. */
+export const SUGGESTIONS = CHIP_LABELS
 
 /** A row of the four suggestion chips. */
 export function SuggestionChips({ onPick }: { onPick: (task: string) => void }) {

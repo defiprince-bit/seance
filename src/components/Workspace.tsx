@@ -11,6 +11,9 @@
  */
 import { useEffect, useCallback, useState } from 'react'
 import { pillStatus } from '../state/seance.ts'
+import type { CsvData } from '../state/seance.ts'
+import { chipByLabel } from '../lib/golden.ts'
+import { goldenFor } from '../services/golden.ts'
 import { useSeance } from '../state/useSeance.ts'
 import { activeRangeOf } from '../lib/ranges.ts'
 import { summarizeCompileError, buildFixTask } from '../lib/compileError.ts'
@@ -28,7 +31,7 @@ import { ErrorState } from './ErrorState.tsx'
 const PLAY_STEP_MS = 5000
 
 export function Workspace() {
-  const { state, dispatch, summon, abort, reset } = useSeance()
+  const { state, dispatch, summon, replay, abort, reset } = useSeance()
   const [playRequested, setPlayRequested] = useState(false)
   const { error, program } = state
 
@@ -59,12 +62,22 @@ export function Workspace() {
     return () => window.removeEventListener('keydown', onKey)
   }, [abort, dispatch])
 
-  const start = useCallback((task?: string) => { setPlayRequested(false); void summon(task) }, [summon])
+  // a typed task never carries a chip's sample CSV (file attach is task 12)
+  const start = useCallback((task?: string, csv?: CsvData | null) => {
+    setPlayRequested(false)
+    void summon(task, task === undefined && csv === undefined ? null : csv)
+  }, [summon])
 
-  const pick = useCallback((task: string) => {
-    dispatch({ type: 'SET_TASK', task }) // the chip fills TaskInput…
-    start(task)                          // …and summons it (golden replay is task 10)
-  }, [dispatch, start])
+  // A chip replays its golden séance (Req 2.2); with no fixture it summons live.
+  const pick = useCallback((label: string) => {
+    const chip = chipByLabel(label)
+    if (!chip) { dispatch({ type: 'SET_TASK', task: label }); start(label); return }
+    dispatch({ type: 'SET_TASK', task: chip.task })
+    setPlayRequested(false)
+    const golden = goldenFor(chip.slug)
+    if (golden) { void replay(golden); return }
+    start(chip.task, chip.csv ? { name: chip.csv.name, rows: chip.csv.text.trim().split(/\r?\n/).length - 1, text: chip.csv.text } : null)
+  }, [dispatch, start, replay])
 
   const edit = useCallback(() => {
     const el = document.getElementById(TASK_INPUT_ID) as HTMLInputElement | null
@@ -80,15 +93,16 @@ export function Workspace() {
       ? `GnuCOBOL said, at line ${error.line ?? '?'}: ${summarizeCompileError(error.message, error.line, lines).technical}`
       : error.kind === 'timeout' ? 'it ran past its time limit without finishing.'
       : error.message
-    start(buildFixTask(state.task, failure))
-  }, [error, lines, start, state.task])
+    // keep the séance's CSV (e.g. a chip's sample) for the retry
+    start(buildFixTask(state.task, failure), state.csv ?? null)
+  }, [error, lines, start, state.task, state.csv])
 
   const codeColumn = program
-    ? <CodePane key={state.runId} lines={lines} activeRange={activeRange} streaming filename={program.filename} errorAt={compile} />
+    ? <CodePane key={state.runId} lines={lines} activeRange={activeRange} streaming filename={program.filename} errorAt={compile} cached={state.cached} />
     : state.phase === 'summoning' ? <SummoningSkeleton /> : <EmptyState onPick={pick} />
 
   const ghostColumn = error && error.step !== 'python'
-    ? <ErrorState error={error} sourceLines={lines} onFix={fix} onEdit={edit} onRetry={() => start()} onPick={pick} />
+    ? <ErrorState error={error} sourceLines={lines} onFix={fix} onEdit={edit} onRetry={() => start(undefined, state.csv ?? null)} onPick={pick} />
     : (
       <GhostNarration
         steps={state.steps}

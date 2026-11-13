@@ -53,7 +53,9 @@ export type Action =
   | { type: 'SUMMON_START' }
   | { type: 'RESTORE'; snapshot: SeanceState }
   | { type: 'RESET' }
-  | { type: 'PROGRAM_RECEIVED'; program: Program }
+  | { type: 'SET_CSV'; csv?: CsvData }
+  /** cached: true when a golden séance is replaying (shows the "cached séance" meta) */
+  | { type: 'PROGRAM_RECEIVED'; program: Program; cached?: boolean }
   | { type: 'SUMMON_UNSUPPORTED'; reason: string }
   | { type: 'STEP_FAILED'; step: PipelineStep; kind: 'busy' | 'invalid'; message: string }
   | { type: 'COBOL_RUN_DONE'; run: Run }
@@ -89,6 +91,9 @@ export function reducer(state: SeanceState, action: Action): SeanceState {
     case 'SET_TASK':
       return { ...state, task: action.task }
 
+    case 'SET_CSV':
+      return { ...state, csv: action.csv }
+
     case 'SUMMON_START':
       return { ...state, phase: 'summoning', error: undefined }
 
@@ -106,7 +111,7 @@ export function reducer(state: SeanceState, action: Action): SeanceState {
         program: action.program,
         cobolRun: undefined, steps: [], python: [], note: undefined,
         pythonRun: undefined, agreement: undefined, activeIndex: 0,
-        error: undefined, cached: false, runId: state.runId + 1,
+        error: undefined, cached: action.cached ?? false, runId: state.runId + 1,
       }
 
     case 'SUMMON_UNSUPPORTED':

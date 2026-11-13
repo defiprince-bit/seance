@@ -6,13 +6,25 @@
  */
 import { useReducer, useRef, useCallback } from 'react'
 import { reducer, initial, runFailure } from './seance.ts'
-import type { SeanceState, PipelineStep } from './seance.ts'
+import type { SeanceState, PipelineStep, CsvData } from './seance.ts'
+import { replayPlan } from './replay.ts'
+import type { GoldenSeance } from '../lib/golden.ts'
 import { encodeStdin } from '../lib/stdin.ts'
 import { numberSource } from '../lib/numbering.ts'
 import { isSummonSuccess } from '../lib/schemas.ts'
 import type { Run } from '../lib/schemas.ts'
 import { apiSummon, apiRun, apiNarrate, ApiError } from '../services/api.ts'
 import { runPython } from '../services/python.ts'
+
+/** Resolves true after `ms`, or false as soon as the signal aborts. */
+function wait(ms: number, signal: AbortSignal): Promise<boolean> {
+  return new Promise(resolve => {
+    if (signal.aborted) { resolve(false); return }
+    const t = setTimeout(() => { signal.removeEventListener('abort', onAbort); resolve(true) }, ms)
+    const onAbort = () => { clearTimeout(t); resolve(false) }
+    signal.addEventListener('abort', onAbort, { once: true })
+  })
+}
 
 export function useSeance() {
   const [state, dispatch] = useReducer(reducer, initial)
@@ -34,10 +46,13 @@ export function useSeance() {
    * Starts a summon. `taskOverride` is what gets sent to the model (chip picks,
    * "Let the ghost fix it"); the task box keeps whatever the user typed.
    */
-  const summon = useCallback(async (taskOverride?: string) => {
+  const summon = useCallback(async (taskOverride?: string, csvOverride?: CsvData | null) => {
     const current = latest.current
     const task = (taskOverride ?? current.task).trim()
     if (!task || inFlight.current) return
+    // null = no CSV for this séance; undefined = keep whatever the state has
+    const csv = csvOverride === undefined ? current.csv : csvOverride ?? undefined
+    if (csvOverride !== undefined) dispatch({ type: 'SET_CSV', csv })
 
     const ctrl = new AbortController()
     abortRef.current = ctrl
@@ -53,13 +68,13 @@ export function useSeance() {
     }
 
     dispatch({ type: 'SUMMON_START' })
-    const stdin = encodeStdin(current.csv?.text)
+    const stdin = encodeStdin(csv?.text)
 
     try {
       // 1. summon
       let res
       try {
-        res = await apiSummon(task, current.csv?.text.split(/\r?\n/)[0], ctrl.signal)
+        res = await apiSummon(task, csv?.text.split(/\r?\n/)[0], ctrl.signal)
       } catch (err) { failStep('summon', err); return }
       if (stale()) return
       if (!isSummonSuccess(res)) { dispatch({ type: 'SUMMON_UNSUPPORTED', reason: res.reason }); return }
@@ -94,11 +109,33 @@ export function useSeance() {
     }
   }, [])
 
+  /**
+   * Replays a golden séance: the same actions a live séance dispatches, on a
+   * timer, so the full animation plays. No API or Pyodide call is made. Esc
+   * cancels it like a live summon (abort restores the earlier state).
+   */
+  const replay = useCallback(async (golden: GoldenSeance) => {
+    if (inFlight.current) return
+    const ctrl = new AbortController()
+    abortRef.current = ctrl
+    inFlight.current = true
+    snapshot.current = latest.current
+    try {
+      for (const step of replayPlan(golden)) {
+        if (step.waitMs > 0 && !(await wait(step.waitMs, ctrl.signal))) return
+        if (ctrl.signal.aborted) return
+        dispatch(step.action)
+      }
+    } finally {
+      if (abortRef.current === ctrl) inFlight.current = false
+    }
+  }, [])
+
   const reset = useCallback(() => {
     abortRef.current?.abort()
     inFlight.current = false
     dispatch({ type: 'RESET' })
   }, [])
 
-  return { state, dispatch, summon, abort, reset }
+  return { state, dispatch, summon, replay, abort, reset }
 }

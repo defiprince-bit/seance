@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "slug": "sales",
+  "label": "Total the sales in a CSV",
+  "task": "Total the amount column of the attached sales CSV and print the result as TOTAL SALES.",
+  "csv": {
+    "name": "sales.csv",
+    "text": "region,amount\nNorth,1520.25\nSouth,980.00\nEast,2105.75\nWest,1265.50\n"
+  },
+  "provenance": "hand-made",
+  "capturedAt": "2026-11-09",
+  "source": "Hand-made offline placeholder (no compiler or LLM call). The COBOL output is the expected output, worked out by hand; the Python output is from a real Pyodide run. npm run golden:capture replaces this file with a real capture (Req 8.1).",
+  "program": {
+    "language": "cobol",
+    "dialect": "cobol85-fixed",
+    "filename": "total-sales.cob",
+    "title": "Total sales",
+    "lines": [
+      "       IDENTIFICATION DIVISION.",
+      "       PROGRAM-ID. TOTAL-SALES.",
+      "       ENVIRONMENT DIVISION.",
+      "       DATA DIVISION.",
+      "       WORKING-STORAGE SECTION.",
+      "       01  WS-COUNT        PIC 9(4) VALUE ZERO.",
+      "       01  WS-I            PIC 9(4) VALUE ZERO.",
+      "       01  WS-LINE         PIC X(200).",
+      "       01  WS-REGION       PIC X(50).",
+      "       01  WS-AMOUNT-TXT   PIC X(20).",
+      "       01  WS-AMOUNT       PIC S9(7)V99 VALUE ZERO.",
+      "       01  WS-TOTAL        PIC S9(7)V99 VALUE ZERO.",
+      "       01  WS-TOTAL-OUT    PIC Z(6)9.99.",
+      "       PROCEDURE DIVISION.",
+      "      * Read the row count, then add up every sale",
+      "       MAIN-PARA.",
+      "           ACCEPT WS-COUNT",
+      "           PERFORM VARYING WS-I FROM 1 BY 1",
+      "               UNTIL WS-I > WS-COUNT",
+      "               ACCEPT WS-LINE",
+      "               UNSTRING WS-LINE DELIMITED BY \",\"",
+      "                   INTO WS-REGION WS-AMOUNT-TXT",
+      "               END-UNSTRING",
+      "               COMPUTE WS-AMOUNT = FUNCTION NUMVAL(WS-AMOUNT-TXT)",
+      "               ADD WS-AMOUNT TO WS-TOTAL",
+      "           END-PERFORM",
+      "      * Dress the total up for printing",
+      "           MOVE WS-TOTAL TO WS-TOTAL-OUT",
+      "           DISPLAY \"TOTAL SALES: \" WS-TOTAL-OUT",
+      "           STOP RUN."
+    ]
+  },
+  "cobolRun": {
+    "stdout": "TOTAL SALES:    5871.50\n",
+    "exitCode": 0,
+    "runner": "fixtures"
+  },
+  "narration": {
+    "steps": [
+      {
+        "range": [
+          1,
+          3
+        ],
+        "quote": "Every program introduced itself first.",
+        "text": "The IDENTIFICATION DIVISION names the program TOTAL-SALES. The ENVIRONMENT DIVISION stays empty: the data arrives on stdin, like a Python script reading sys.stdin."
+      },
+      {
+        "range": [
+          4,
+          13
+        ],
+        "quote": "Before any work, you declare every box and its exact size.",
+        "text": "WORKING-STORAGE declares each variable with a PIC clause. PIC S9(7)V99 is seven digits and two decimals, kept exact; Python mirrors it with Decimal. Z(6)9.99 is the printed form."
+      },
+      {
+        "range": [
+          14,
+          17
+        ],
+        "text": "The PROCEDURE DIVISION holds the code. ACCEPT WS-COUNT reads the first stdin line, the number of rows, like int(sys.stdin.readline()) in Python."
+      },
+      {
+        "range": [
+          18,
+          23
+        ],
+        "quote": "We had no split(). We had UNSTRING, and we liked it.",
+        "text": "PERFORM VARYING loops once per row, like a Python for loop. ACCEPT reads the row and UNSTRING cuts it at the comma into region and amount, like str.split(',')."
+      },
+      {
+        "range": [
+          24,
+          26
+        ],
+        "text": "FUNCTION NUMVAL turns the amount text into a number, like Decimal(text). ADD puts it on the running total, like total += amount. END-PERFORM closes the loop."
+      },
+      {
+        "range": [
+          27,
+          30
+        ],
+        "text": "MOVE copies the total into the edited picture, which adds the decimal point and leading spaces. DISPLAY prints it, like print(), and STOP RUN ends the program."
+      }
+    ],
+    "python": [
+      {
+        "text": "import sys",
+        "maps": null
+      },
+      {
+        "text": "from decimal import Decimal, getcontext, ROUND_DOWN",
+        "maps": null
+      },
+      {
+        "text": "getcontext().prec = 50",
+        "maps": null
+      },
+      {
+        "text": "CENTS = Decimal(\"0.01\")",
+        "maps": [
+          11,
+          12
+        ]
+      },
+      {
+        "text": "total = Decimal(\"0.00\")",
+        "maps": [
+          12,
+          12
+        ]
+      },
+      {
+        "text": "n = int(sys.stdin.readline())",
+        "maps": [
+          17,
+          17
+        ]
+      },
+      {
+        "text": "for _ in range(n):",
+        "maps": [
+          18,
+          19
+        ]
+      },
+      {
+        "text": "    row = sys.stdin.readline().rstrip(\"\\n\")",
+        "maps": [
+          20,
+          20
+        ]
+      },
+      {
+        "text": "    region, amount_txt = row.split(\",\", 1)",
+        "maps": [
+          21,
+          23
+        ]
+      },
+      {
+        "text": "    amount = Decimal(amount_txt.strip()).quantize(CENTS, rounding=ROUND_DOWN)",
+        "maps": [
+          24,
+          24
+        ]
+      },
+      {
+        "text": "    total = (total + amount).quantize(CENTS, rounding=ROUND_DOWN)",
+        "maps": [
+          25,
+          25
+        ]
+      },
+      {
+        "text": "print(f\"TOTAL SALES: {total}\")",
+        "maps": [
+          28,
+          29
+        ]
+      }
+    ],
+    "note": "COBOL keeps money as exact fixed-point decimals (PIC S9(7)V99); Python mirrors them with Decimal, truncating to cents like COBOL."
+  },
+  "pythonRun": {
+    "stdout": "TOTAL SALES: 5871.50",
+    "exitCode": 0,
+    "runner": "pyodide"
+  }
+}
