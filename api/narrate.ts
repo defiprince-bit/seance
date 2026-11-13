@@ -135,6 +135,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Both attempts exhausted
   return res.status(502).json({
+    // code lets the client tell this apart from a busy 5xx
+    code: 'ghost-mumbled',
     error: `The ghost mumbled. ${lastError}`,
   })
 }

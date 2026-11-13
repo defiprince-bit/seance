@@ -28,6 +28,13 @@
 .ln.on { background: var(--candle-veil); }
 .ln.on::before { color: var(--candle); }
 .ln.done { opacity: .72; }
+.ln.err { background: rgba(238,142,126,.08); }
+.ln.err::before { color: var(--danger); }
+.token {
+  color: var(--danger); background: rgba(238,142,126,.14);
+  text-decoration: underline wavy rgba(238,142,126,.6); text-underline-offset: 3px;
+  text-shadow: none;
+}
 .streaming { animation: lineIn var(--d-slow) var(--ease-out) both; }
 .planchette {
   position: absolute; left: 40px; top: 0; width: 14px; height: 19px;

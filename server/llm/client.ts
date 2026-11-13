@@ -14,6 +14,8 @@
  *   - Throws on network or non-2xx errors.
  */
 
+import { withNetworkRetry } from '../../src/lib/retry.ts'
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -89,14 +91,15 @@ export async function chatComplete(
     body.response_format = { type: 'json_object' }
   }
 
-  const response = await fetch(url, {
+  // one quiet retry if the request never got a response ("fetch failed")
+  const response = await withNetworkRetry(() => fetch(url, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${config.apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),
-  })
+  }))
 
   if (!response.ok) {
     const text = await response.text().catch(() => '')

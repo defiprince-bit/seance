@@ -16,6 +16,8 @@ interface CodePaneProps {
   activeRange: Range | null
   streaming: boolean
   filename?: string
+  /** compile error: line to mark and token to underline */
+  errorAt?: { line: number; token?: string }
 }
 
 const Mark = () => (
@@ -26,8 +28,17 @@ const Mark = () => (
   </svg>
 )
 
-export function CodePane({ lines, activeRange, streaming, filename }: CodePaneProps) {
+/** The error line, with the failing token under a wavy danger underline. */
+function Marked({ text, token }: { text: string; token?: string }) {
+  const at = token ? text.toUpperCase().indexOf(token.toUpperCase()) : -1
+  if (at < 0) return <>{text || ' '}</>
+  return <>{text.slice(0, at)}<span className={s.token}>{text.slice(at, at + token!.length)}</span>{text.slice(at + token!.length)}</>
+}
+
+export function CodePane({ lines, activeRange: stepRange, streaming, filename, errorAt }: CodePaneProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
+  // a compile error takes over the highlight: the planchette points at the broken line
+  const activeRange: Range | null = errorAt ? [errorAt.line, errorAt.line] : stepRange
   const a = activeRange ? activeRange[0] : 0
   const b = activeRange ? activeRange[1] : 0
 
@@ -64,14 +75,16 @@ export function CodePane({ lines, activeRange, streaming, filename }: CodePanePr
             const n = i + 1
             const on = activeRange !== null && n >= a && n <= b
             const done = activeRange !== null && n < a
+            const isErr = errorAt?.line === n
             return (
               <span
                 key={i}
-                className={`${s.ln} ${on ? s.on : ''} ${done ? s.done : ''} ${streaming ? s.streaming : ''}`}
+                className={`${s.ln} ${on ? s.on : ''} ${done ? s.done : ''} ${isErr ? s.err : ''} ${streaming ? s.streaming : ''}`}
                 data-n={n}
                 style={streaming ? { animationDelay: `${i * 40}ms` } : undefined}
+                aria-invalid={isErr || undefined}
               >
-                {line || ' '}
+                {isErr ? <Marked text={line} token={errorAt?.token} /> : (line || ' ')}
               </span>
             )
           })}

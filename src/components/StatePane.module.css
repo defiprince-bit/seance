@@ -1,0 +1,64 @@
+/* Shared frame for EmptyState, SummoningSkeleton and ErrorState */
+.pane {
+  position: relative; background: var(--crypt); border: 1px solid var(--seam);
+  border-radius: var(--r-md); box-shadow: var(--shadow-pane);
+  display: flex; flex-direction: column; min-height: 0; overflow: hidden; flex: 1;
+}
+.paneH {
+  display: flex; align-items: center; gap: 10px;
+  height: 44px; padding: 0 var(--s-4); border-bottom: 1px solid var(--seam); flex: none;
+}
+.paneTitle { margin: 0; font: italic 400 19px/1 var(--font-display); color: var(--bone); }
+.meta { font-size: var(--text-xs); color: var(--dust); }
+.body {
+  flex: 1; min-height: 0; overflow: auto;
+  padding: var(--s-6); display: flex; flex-direction: column; gap: var(--s-3);
+}
+.title { margin: 0; font: italic 400 var(--text-lg)/1.2 var(--font-display); color: var(--bone); }
+.text { margin: 0; color: var(--ash); }
+.foot { margin: auto 0 0; font-size: var(--text-xs); color: var(--dust); }
+
+/* skeleton */
+.crtBody { background: var(--terminal); }
+.writing { margin: 0; font: 400 18px/1.2 var(--font-crt); color: var(--phosphor); text-shadow: var(--glow-phosphor); }
+.bar {
+  height: 12px; border-radius: 3px; background: rgba(159,221,176,.14);
+  transform-origin: left; animation: lineIn var(--d-slow) var(--ease-out) both;
+}
+
+/* error */
+.errLine {
+  margin: 0; padding: 10px 12px; border-radius: var(--r-sm);
+  font: 400 12.5px/19px var(--font-code); color: var(--phosphor);
+  white-space: pre; overflow-x: auto;
+}
+.lineNo { color: var(--dust); }
+.token {
+  background: rgba(238,142,126,.14); color: var(--danger);
+  text-decoration: underline wavy rgba(238,142,126,.6); text-underline-offset: 3px;
+}
+.danger { margin: 0; color: var(--danger); }
+.stderr {
+  margin: 0; padding: 10px 12px; border-radius: var(--r-sm);
+  font: 400 16px/20px var(--font-crt); color: var(--danger);
+  white-space: pre-wrap; max-height: 160px; overflow: auto;
+}
+.details { font-size: var(--text-xs); color: var(--dust); }
+.details summary { cursor: pointer; }
+.details pre { margin: 6px 0 0; white-space: pre-wrap; font: 400 12px/1.5 var(--font-code); }
+.actions { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-1); }
+.btn {
+  display: inline-flex; align-items: center; height: 36px; padding: 0 14px;
+  border-radius: var(--r-sm); border: 1px solid var(--seam-strong);
+  background: transparent; color: var(--bone);
+  font: 500 var(--text-sm)/1 var(--font-body); cursor: pointer;
+  transition: background var(--d-fast) var(--ease-out), border-color var(--d-fast) var(--ease-out), transform var(--d-instant) var(--ease-out);
+}
+.btn:hover { border-color: var(--ash); background: rgba(255,255,255,.03); }
+.btn:active { transform: translateY(1px); }
+.candle { background: var(--candle); border-color: var(--candle); color: var(--candle-ink); }
+.candle:hover { background: #F0B56A; border-color: #F0B56A; }
+.candle:active { background: var(--candle-deep); }
+
+/* keyframes copied as-is from seance-design.md (CSS modules scope names per file) */
+@keyframes lineIn{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}

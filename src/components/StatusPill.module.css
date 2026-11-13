@@ -10,9 +10,14 @@
   background: var(--phosphor); opacity: .25;
   animation: breathe var(--d-breathe) ease-in-out infinite;
 }
+/* idle "Candles lit": a dim candle that still breathes */
+.idle .dot, .idle .dot::after { background: var(--dust); }
 .summoning .dot, .summoning .dot::after { background: var(--candle); }
+.present .dot, .present .dot::after { background: var(--phosphor); }
+/* error: danger dot, no breathing */
+.error { color: var(--bone); }
 .error .dot { background: var(--danger); }
-.error .dot::after { display: none; }
+.error .dot::after { display: none; animation: none; }
 @media (max-width: 767px) { .pill { display: none; } }
 
 /* keyframes copied as-is from seance-design.md (CSS modules scope names per file) */

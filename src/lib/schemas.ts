@@ -100,6 +100,8 @@ export const RunSchema = z.object({
   stderr: z.string().optional(),
   exitCode: z.number().int(),
   timedOut: z.boolean().optional(),
+  /** the time limit the run had, in seconds, when the runner reports it */
+  timeLimitSec: z.number().positive().optional(),
   compileError: z
     .object({
       line: z.number().int().min(1).optional(),

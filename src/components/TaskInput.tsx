@@ -9,6 +9,9 @@ import { SummonButton } from './SummonButton.tsx'
 import type { SummonState } from './SummonButton.tsx'
 import s from './TaskInput.module.css'
 
+/** "Edit the task" focuses and selects this input. */
+export const TASK_INPUT_ID = 'task-input'
+
 interface TaskInputProps {
   value: string
   phase: Phase
@@ -54,6 +57,7 @@ export function TaskInput({ value, phase, hasRun, onChange, onSubmit }: TaskInpu
         </svg>
         <input
           ref={inputRef}
+          id={TASK_INPUT_ID}
           className={s.input}
           value={value}
           maxLength={500}

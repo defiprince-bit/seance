@@ -25,8 +25,22 @@
 .term[hidden] { display: none; }
 .line { white-space: pre; color: var(--phosphor-dim); }
 .result { white-space: pre; color: #D4F5DC; animation: flickerIn var(--d-slow) var(--ease-out) both; }
-.error { white-space: pre; color: var(--danger); }
+.error { white-space: pre-wrap; color: var(--danger); }
 .dim { color: var(--phosphor-dim); }
 
 /* keyframes copied as-is from seance-design.md (CSS modules scope names per file) */
 @keyframes flickerIn{0%{opacity:0}55%{opacity:.75}70%{opacity:.5}100%{opacity:1}}
+
+/* Python runtime-error state (Req 6.4) */
+.failHead {
+  display: flex; flex-direction: column; gap: 6px;
+  padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--seam);
+}
+.failActions { display: flex; flex-wrap: wrap; gap: 6px; }
+.act {
+  height: 26px; padding: 0 10px; border-radius: var(--r-sm);
+  border: 1px solid var(--seam-strong); background: var(--crypt); color: var(--bone);
+  font: 500 var(--text-xs)/1 var(--font-body); text-shadow: none; cursor: pointer;
+}
+.act:hover { border-color: var(--ash); }
+.flag { color: var(--danger); }

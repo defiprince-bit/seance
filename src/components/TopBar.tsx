@@ -2,7 +2,7 @@
  * TopBar — 56px app header: Wordmark, session title, static LanguageTrigger,
  * StatusPill, End séance. Language picker is a later task, so the trigger is chrome only.
  */
-import type { Phase } from '../state/seance.ts'
+import type { PillTone } from '../state/seance.ts'
 import { StatusPill } from './StatusPill.tsx'
 import s from './TopBar.module.css'
 
@@ -20,11 +20,11 @@ function PlanchetteMark() {
 
 interface TopBarProps {
   sessionTitle: string
-  phase: Phase
+  status: { tone: PillTone; label: string }
   onEnd: () => void
 }
 
-export function TopBar({ sessionTitle, phase, onEnd }: TopBarProps) {
+export function TopBar({ sessionTitle, status, onEnd }: TopBarProps) {
   return (
     <header className={s.topbar}>
       {/* the one small cobweb allowed in the app chrome */}
@@ -54,7 +54,7 @@ export function TopBar({ sessionTitle, phase, onEnd }: TopBarProps) {
         </svg>
       </span>
 
-      <StatusPill phase={phase} />
+      <StatusPill tone={status.tone} label={status.label} />
       <button className={s.endBtn} onClick={onEnd} type="button">End séance</button>
     </header>
   )

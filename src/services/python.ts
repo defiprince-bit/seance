@@ -81,6 +81,7 @@ export async function runPython(
         stderr: 'Python run timed out after 10 seconds.',
         exitCode: 1,
         timedOut: true,
+        timeLimitSec: PYTHON_TIMEOUT_MS / 1000,
         runner: 'pyodide',
       })
     }, PYTHON_TIMEOUT_MS)

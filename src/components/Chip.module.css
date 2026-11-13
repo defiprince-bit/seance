@@ -1,0 +1,10 @@
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 28px; padding: 0 10px;
+  border-radius: var(--r-pill); border: 1px solid var(--seam);
+  background: var(--altar); color: var(--ash);
+  font: 400 var(--text-sm)/1 var(--font-body); cursor: pointer;
+  transition: border-color var(--d-fast) var(--ease-out), color var(--d-fast) var(--ease-out);
+}
+.chip:hover { border-color: var(--seam-strong); color: var(--bone); }
+.row { display: flex; flex-wrap: wrap; gap: var(--s-2); }

@@ -1,23 +1,15 @@
-/** StatusPill — 26px role="status" pill with a breathing dot. */
-import type { Phase } from '../state/seance.ts'
+/**
+ * StatusPill — 26px role="status" pill. The dot breathes except on error.
+ * The label comes from pillStatus() in src/state/seance.ts.
+ */
+import type { PillTone } from '../state/seance.ts'
 import s from './StatusPill.module.css'
 
-const LABEL: Record<Phase, string> = {
-  idle: 'Candles lit',
-  summoning: 'Summoning',
-  running: 'Summoning',
-  narrating: 'Spirit present',
-  ready: 'Spirit present',
-  error: 'Run failed',
-}
-
-export function StatusPill({ phase }: { phase: Phase }) {
-  const busy = phase === 'summoning' || phase === 'running'
-  const cls = [s.pill, busy ? s.summoning : '', phase === 'error' ? s.error : ''].join(' ')
+export function StatusPill({ tone, label }: { tone: PillTone; label: string }) {
   return (
-    <span className={cls} role="status">
+    <span className={`${s.pill} ${s[tone]}`} role="status">
       <i className={s.dot} />
-      {LABEL[phase]}
+      {label}
     </span>
   )
 }

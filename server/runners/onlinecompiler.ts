@@ -17,7 +17,8 @@
  *  OnlineCompiler.io sets exit_code = 124 when the time limit is exceeded.
  */
 
-import { remapCompilerMessage } from '../../src/lib/lineOffset.ts'
+import { remapCompilerMessage, firstErrorLine } from '../../src/lib/lineOffset.ts'
+import { withNetworkRetry } from '../../src/lib/retry.ts'
 import type { Run } from '../../src/lib/schemas.ts'
 
 // ---------------------------------------------------------------------------
@@ -63,25 +64,10 @@ function parseCompileError(
 ): { line?: number; message: string } | null {
   if (!errorText.trim()) return null
 
-  // Look for the first line that looks like a compiler diagnostic
-  const lines = errorText.split('\n')
-  for (const line of lines) {
-    // Matches: "anything:LINE:" or "anything:LINE:COL:" patterns
-    const match = /:\s*(\d+)\s*:/.exec(line)
-    if (match) {
-      const rawLine = parseInt(match[1], 10)
-      const adjustedLine = Math.max(1, rawLine - lineOffset)
-      return {
-        line: adjustedLine,
-        message: remapCompilerMessage(errorText.trim(), lineOffset),
-      }
-    }
-  }
-
-  // Error text present but no line number found (rare — linker errors, etc.)
-  return {
-    message: remapCompilerMessage(errorText.trim(), lineOffset),
-  }
+  const message = remapCompilerMessage(errorText.trim(), lineOffset)
+  // first "file:N: error:" diagnostic (notes and warnings are skipped)
+  const line = firstErrorLine(message)
+  return line === undefined ? { message } : { line, message }
 }
 
 // ---------------------------------------------------------------------------
@@ -112,14 +98,15 @@ export async function runCobol(source: string, stdin: string, apiKey: string): P
     input: stdin,
   }
 
-  const response = await fetch(OC_ENDPOINT, {
+  // one quiet retry if the request never got a response ("fetch failed")
+  const response = await withNetworkRetry(() => fetch(OC_ENDPOINT, {
     method: 'POST',
     headers: {
       'Authorization': apiKey,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),
-  })
+  }))
 
   if (!response.ok) {
     const text = await response.text().catch(() => '')
@@ -135,6 +122,7 @@ export async function runCobol(source: string, stdin: string, apiKey: string): P
       stderr: oc.error || undefined,
       exitCode: 124,
       timedOut: true,
+      ...(typeof oc.time_limit === 'number' ? { timeLimitSec: oc.time_limit } : {}),
       runner: 'onlinecompiler',
     }
   }

@@ -12,6 +12,8 @@ interface GhostNarrationProps {
   steps: Step[]
   activeIndex: number
   playing: boolean
+  /** shown while there are no steps yet */
+  waiting?: string
   onStep: (i: number) => void
   onPrev: () => void
   onNext: () => void
@@ -27,7 +29,7 @@ const GhostMark = () => (
 )
 
 export function GhostNarration({
-  steps, activeIndex, playing, onStep, onPrev, onNext, onTogglePlay,
+  steps, activeIndex, playing, waiting = 'The ghost is waiting for a program.', onStep, onPrev, onNext, onTogglePlay,
 }: GhostNarrationProps) {
   const active = steps[activeIndex]
 
@@ -39,7 +41,7 @@ export function GhostNarration({
       </div>
 
       <div className={s.list}>
-        {steps.length === 0 && <p className={s.empty}>The ghost is waiting for a program.</p>}
+        {steps.length === 0 && <p className={s.empty}>{waiting}</p>}
         {steps.map((step, i) => {
           const isActive = i === activeIndex
           const isAhead = i > activeIndex

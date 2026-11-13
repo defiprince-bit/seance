@@ -1,62 +1,54 @@
 /**
- * Workspace — wires the reducer to the APIs and the Pyodide worker, and renders
- * the AppShell. Pipeline: summon → (run ∥ narrate) → python → agree.
- * Keyboard: Ctrl/Cmd+Enter (in TaskInput), `/` (TaskInput), j / k, Esc.
+ * Workspace — renders the AppShell from the séance state and routes every
+ * state to a visible pane:
+ *
+ *   column 1  CodePane when there is a program; SummoningSkeleton while
+ *             summoning; EmptyState otherwise
+ *   column 2  ErrorState for any failure except a Python one; GhostNarration otherwise
+ *   column 3  TranslationPane + RunOutput (Python failures show there, Req 6.4)
+ *
+ * Keyboard: Ctrl/Cmd+Enter (TaskInput), `/` (TaskInput), j / k, Esc.
  */
-import { useReducer, useEffect, useRef, useCallback, useState } from 'react'
-import { reducer, initial } from '../state/seance.ts'
-import type { SeanceState } from '../state/seance.ts'
+import { useEffect, useCallback, useState } from 'react'
+import { pillStatus } from '../state/seance.ts'
+import { useSeance } from '../state/useSeance.ts'
 import { activeRangeOf } from '../lib/ranges.ts'
-import { encodeStdin } from '../lib/stdin.ts'
-import { numberSource } from '../lib/numbering.ts'
-import { isSummonSuccess } from '../lib/schemas.ts'
-import type { Run } from '../lib/schemas.ts'
-import { runPython } from '../services/python.ts'
-import { apiSummon, apiRun, apiNarrate, BusyError } from '../services/api.ts'
+import { summarizeCompileError, buildFixTask } from '../lib/compileError.ts'
 import { AppShell } from './AppShell.tsx'
 import { TopBar } from './TopBar.tsx'
-import { TaskInput } from './TaskInput.tsx'
+import { TaskInput, TASK_INPUT_ID } from './TaskInput.tsx'
 import { CodePane } from './CodePane.tsx'
 import { GhostNarration, ASK_INPUT_ID } from './GhostNarration.tsx'
 import { TranslationPane } from './TranslationPane.tsx'
 import { RunOutput } from './RunOutput.tsx'
+import { EmptyState } from './EmptyState.tsx'
+import { SummoningSkeleton } from './SummoningSkeleton.tsx'
+import { ErrorState } from './ErrorState.tsx'
 
 const PLAY_STEP_MS = 5000
 
-const runFailed = (r: Run) => Boolean(r.compileError) || Boolean(r.timedOut) || r.exitCode !== 0
-
 export function Workspace() {
-  const [state, dispatch] = useReducer(reducer, initial)
+  const { state, dispatch, summon, abort, reset } = useSeance()
   const [playRequested, setPlayRequested] = useState(false)
-  const abortRef = useRef<AbortController | null>(null)
-  const inFlight = useRef(false)
-  const snapshot = useRef<SeanceState>(initial)
+  const { error, program } = state
 
-  // activeIndex is the single source of truth; every pane derives from this
   const activeRange = activeRangeOf(state.steps, state.activeIndex)
-  const atEnd = state.activeIndex >= state.steps.length - 1
-  const playing = playRequested && !atEnd
+  const playing = playRequested && state.activeIndex < state.steps.length - 1
+  const lines = program?.lines ?? []
+  const compile = error?.kind === 'compile' && error.line !== undefined
+    ? { line: error.line, token: summarizeCompileError(error.message, error.line, lines).token }
+    : undefined
 
-  // ── Play: the only thing that may advance narration on its own ───────────
+  // Play is the only thing that advances narration on its own
   useEffect(() => {
     if (!playing) return
     const t = setTimeout(() => dispatch({ type: 'STEP_NEXT' }), PLAY_STEP_MS)
     return () => clearTimeout(t)
-  }, [playing, state.activeIndex])
+  }, [playing, state.activeIndex, dispatch])
 
-  // ── Abort: Esc cancels everything in flight and restores the prior state ──
-  const abortInFlight = useCallback(() => {
-    if (!inFlight.current) return
-    abortRef.current?.abort()
-    inFlight.current = false
-    setPlayRequested(false)
-    dispatch({ type: 'RESTORE', snapshot: snapshot.current })
-  }, [])
-
-  // ── j / k / Esc ──────────────────────────────────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { abortInFlight(); return }
+      if (e.key === 'Escape') { if (abort()) setPlayRequested(false); return }
       if (e.ctrlKey || e.metaKey || e.altKey) return
       const t = e.target as HTMLElement
       if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable) return
@@ -65,102 +57,65 @@ export function Workspace() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [abortInFlight])
+  }, [abort, dispatch])
 
-  // ── The pipeline ─────────────────────────────────────────────────────────
-  const handleSummon = useCallback(async () => {
-    const task = state.task.trim()
-    if (!task || inFlight.current) return
+  const start = useCallback((task?: string) => { setPlayRequested(false); void summon(task) }, [summon])
 
-    const ctrl = new AbortController()
-    abortRef.current = ctrl
-    inFlight.current = true
-    snapshot.current = state
-    setPlayRequested(false)
-    const stale = () => ctrl.signal.aborted
+  const pick = useCallback((task: string) => {
+    dispatch({ type: 'SET_TASK', task }) // the chip fills TaskInput…
+    start(task)                          // …and summons it (golden replay is task 10)
+  }, [dispatch, start])
 
-    const fail = (err: unknown) => {
-      if (stale() || (err as Error).name === 'AbortError') return
-      if (err instanceof BusyError) dispatch({ type: 'BUSY_ERROR' })
-      else dispatch({ type: 'SUMMON_ERROR', message: (err as Error).message })
-    }
+  const edit = useCallback(() => {
+    const el = document.getElementById(TASK_INPUT_ID) as HTMLInputElement | null
+    el?.focus()
+    el?.select()
+  }, [])
 
-    dispatch({ type: 'SUMMON_START' })
-    const stdin = encodeStdin(state.csv?.text)
+  // Stub for "Let the ghost fix it": re-summon with the task plus the failure.
+  // The full fix loop lives in the ghost-narrator spec.
+  const fix = useCallback(() => {
+    if (!error) return
+    const failure = error.kind === 'compile'
+      ? `GnuCOBOL said, at line ${error.line ?? '?'}: ${summarizeCompileError(error.message, error.line, lines).technical}`
+      : error.kind === 'timeout' ? 'it ran past its time limit without finishing.'
+      : error.message
+    start(buildFixTask(state.task, failure))
+  }, [error, lines, start, state.task])
 
-    try {
-      // 1. summon
-      let res
-      try {
-        res = await apiSummon(task, state.csv?.text.split('\n')[0], ctrl.signal)
-      } catch (err) { fail(err); return }
-      if (stale()) return
-      if (!isSummonSuccess(res)) { dispatch({ type: 'SUMMON_UNSUPPORTED', reason: res.reason }); return }
+  const codeColumn = program
+    ? <CodePane key={state.runId} lines={lines} activeRange={activeRange} streaming filename={program.filename} errorAt={compile} />
+    : state.phase === 'summoning' ? <SummoningSkeleton /> : <EmptyState onPick={pick} />
 
-      const { program } = res
-      dispatch({ type: 'PROGRAM_RECEIVED', program })
-
-      // 2. run ∥ narrate (both start before either is awaited)
-      const runP = apiRun(program.lines.join('\n'), stdin, ctrl.signal)
-        .then(run => { if (!stale()) dispatch({ type: 'COBOL_RUN_DONE', run }); return run })
-        .catch(err => { fail(err); return null })
-      const narrateP = apiNarrate(task, numberSource(program.lines), program.lines.length, ctrl.signal)
-        .then(n => { if (!stale()) dispatch({ type: 'NARRATE_DONE', steps: n.steps, python: n.python, note: n.note }); return n })
-        .catch(err => { fail(err); return null })
-      const [cobolRun, narration] = await Promise.all([runP, narrateP])
-      if (stale() || !cobolRun || !narration) return
-      if (runFailed(cobolRun)) return // the error state is already showing
-
-      // 3. python, with the same stdin
-      const pythonRun = await runPython(narration.python.map(l => l.text).join('\n'), stdin)
-      if (stale()) return
-      dispatch({ type: 'PYTHON_RUN_DONE', run: pythonRun })
-
-      // 4. agree
-      dispatch({ type: 'AGREE' })
-    } finally {
-      if (abortRef.current === ctrl) inFlight.current = false
-    }
-  }, [state])
+  const ghostColumn = error && error.step !== 'python'
+    ? <ErrorState error={error} sourceLines={lines} onFix={fix} onEdit={edit} onRetry={() => start()} onPick={pick} />
+    : (
+      <GhostNarration
+        steps={state.steps}
+        activeIndex={state.activeIndex}
+        playing={playing}
+        waiting={program ? 'The ghost is reading the program…' : 'The ghost is waiting for a program.'}
+        onStep={i => dispatch({ type: 'SET_ACTIVE', index: i })}
+        onPrev={() => dispatch({ type: 'STEP_PREV' })}
+        onNext={() => dispatch({ type: 'STEP_NEXT' })}
+        onTogglePlay={() => setPlayRequested(p => !p)}
+      />
+    )
 
   return (
     <AppShell
-      top={
-        <TopBar
-          sessionTitle={state.program?.title ?? ''}
-          phase={state.phase}
-          onEnd={() => { abortInFlight(); setPlayRequested(false); dispatch({ type: 'RESET' }) }}
-        />
-      }
+      top={<TopBar sessionTitle={program?.title ?? ''} status={pillStatus(state)} onEnd={() => { setPlayRequested(false); reset() }} />}
       task={
         <TaskInput
           value={state.task}
           phase={state.phase}
-          hasRun={state.program !== undefined}
+          hasRun={program !== undefined || error !== undefined}
           onChange={task => dispatch({ type: 'SET_TASK', task })}
-          onSubmit={handleSummon}
+          onSubmit={() => start()}
         />
       }
-      code={
-        <CodePane
-          key={state.runId}
-          lines={state.program?.lines ?? []}
-          activeRange={activeRange}
-          streaming
-          filename={state.program?.filename}
-        />
-      }
-      ghost={
-        <GhostNarration
-          steps={state.steps}
-          activeIndex={state.activeIndex}
-          playing={playing}
-          onStep={i => dispatch({ type: 'SET_ACTIVE', index: i })}
-          onPrev={() => dispatch({ type: 'STEP_PREV' })}
-          onNext={() => dispatch({ type: 'STEP_NEXT' })}
-          onTogglePlay={() => setPlayRequested(p => !p)}
-        />
-      }
+      code={codeColumn}
+      ghost={ghostColumn}
       python={
         <>
           <TranslationPane lines={state.python} activeRange={activeRange} note={state.note} />
@@ -169,7 +124,10 @@ export function Workspace() {
             pythonRun={state.pythonRun}
             agreement={state.agreement}
             running={!state.cobolRun || !state.pythonRun}
+            failed={error?.step === 'python' ? 'python' : error?.step === 'run' ? 'cobol' : undefined}
             onAskWhy={() => document.getElementById(ASK_INPUT_ID)?.focus()}
+            onFix={fix}
+            onEdit={edit}
           />
         </>
       }
