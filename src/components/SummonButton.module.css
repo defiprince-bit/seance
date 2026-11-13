@@ -1,0 +1,27 @@
+.summon {
+  position: relative; display: inline-flex; align-items: center; gap: 8px;
+  height: 52px; padding: 0 20px;
+  border-radius: var(--r-md); border: 1px solid var(--candle);
+  background: var(--candle); color: var(--candle-ink);
+  font: 500 var(--text-base)/1 var(--font-body); cursor: pointer;
+  transition: background var(--d-fast) var(--ease-out), transform var(--d-instant) var(--ease-out);
+}
+.summon::after {
+  content: ""; position: absolute; inset: -6px; border-radius: 18px;
+  box-shadow: 0 0 26px rgba(233,169,87,.45); opacity: .5; pointer-events: none;
+  animation: breathe var(--d-breathe) ease-in-out infinite;
+}
+.summon:hover:not(:disabled) { background: #F0B56A; border-color: #F0B56A; }
+.summon:active:not(:disabled) { transform: translateY(1px); background: var(--candle-deep); }
+.summon:disabled { opacity: .5; cursor: default; }
+.busy::after { animation: none; }
+.kbd { font: 500 11px/1 var(--font-code); padding: 3px 5px; border-radius: 4px; background: rgba(0,0,0,.18); }
+.mobIcon { display: none; }
+@media (max-width: 767px) {
+  .summon { height: 46px; padding: 0 14px; }
+  .lab, .kbd { display: none; }
+  .mobIcon { display: block; }
+}
+
+/* keyframes copied as-is from seance-design.md (CSS modules scope names per file) */
+@keyframes breathe{0%,100%{opacity:.35}50%{opacity:.85}}

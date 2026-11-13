@@ -95,6 +95,22 @@ export function firstLine(range: Range): number {
 }
 
 // ---------------------------------------------------------------------------
+// activeRangeOf
+// ---------------------------------------------------------------------------
+
+/**
+ * The Active_Range for a step list and index, or null when there are no steps.
+ * Every pane derives its highlight from this one function.
+ */
+export function activeRangeOf(
+  steps: ReadonlyArray<Pick<Step, 'range'>>,
+  activeIndex: number,
+): Range | null {
+  if (steps.length === 0) return null
+  return steps[clampIndex(activeIndex, steps.length)].range as Range
+}
+
+// ---------------------------------------------------------------------------
 // clampIndex
 // ---------------------------------------------------------------------------
 

@@ -1,0 +1,9 @@
+/* Global reset and page chrome (from design/src/base.css, workspace subset) */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--void);color:var(--bone);font:400 var(--text-base)/var(--leading-body) var(--font-body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(1200px 700px at 50% -10%,rgba(233,169,87,.07),transparent 60%),radial-gradient(900px 600px at 100% 110%,rgba(199,192,230,.05),transparent 60%)}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{border-radius:var(--r-sm)}

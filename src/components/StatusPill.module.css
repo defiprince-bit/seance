@@ -1,0 +1,19 @@
+.pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 26px; padding: 0 10px;
+  border-radius: var(--r-pill); border: 1px solid var(--seam);
+  font-size: var(--text-xs); color: var(--ash); background: var(--crypt);
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--phosphor); position: relative; }
+.dot::after {
+  content: ""; position: absolute; inset: -4px; border-radius: 50%;
+  background: var(--phosphor); opacity: .25;
+  animation: breathe var(--d-breathe) ease-in-out infinite;
+}
+.summoning .dot, .summoning .dot::after { background: var(--candle); }
+.error .dot { background: var(--danger); }
+.error .dot::after { display: none; }
+@media (max-width: 767px) { .pill { display: none; } }
+
+/* keyframes copied as-is from seance-design.md (CSS modules scope names per file) */
+@keyframes breathe{0%,100%{opacity:.35}50%{opacity:.85}}
