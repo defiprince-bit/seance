@@ -136,11 +136,12 @@ describe('getLlmConfig: LLM_NARRATE_MODEL', () => {
     expect(getLlmConfig('narrate').model).toBe('openai/gpt-oss-120b')
   })
 
-  // regression: at default effort gpt-oss-20b returned empty output (Groq 400 json_validate_failed)
-  it('narration on a gpt-oss model asks for low reasoning effort; summon does not', () => {
+  // regression: at Groq's default 2048-token cap gpt-oss-20b returned empty output (400 json_validate_failed)
+  it('narration on a gpt-oss model gets medium effort and a 6000-token cap; summon gets neither', () => {
     vi.stubEnv('LLM_NARRATE_MODEL', 'openai/gpt-oss-20b')
-    expect(getLlmConfig('narrate').reasoningEffort).toBe('low')
+    expect(getLlmConfig('narrate')).toMatchObject({ reasoningEffort: 'medium', maxCompletionTokens: 6000 })
     expect(getLlmConfig('summon').reasoningEffort).toBeUndefined()
+    expect(getLlmConfig('summon').maxCompletionTokens).toBeUndefined()
   })
 
   it('a non-gpt-oss narration model gets no reasoning_effort', () => {

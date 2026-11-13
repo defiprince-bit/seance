@@ -13,6 +13,9 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { RunReqSchema } from '../src/lib/schemas.js'
 import { runCobol } from '../server/runners/onlinecompiler.js'
 
+/** Vercel: compile + run can take up to the runner's 30 s limit, plus a network retry. */
+export const config = { maxDuration: 60 }
+
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------

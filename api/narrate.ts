@@ -10,15 +10,22 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { NarrateReqSchema, NarrateResSchema } from '../src/lib/schemas.js'
+import { NarrateReqSchema, NarrateResSchema, describeIssue, describeIssues } from '../src/lib/schemas.js'
+import type { NarrateRes } from '../src/lib/schemas.js'
 import { validateSteps } from '../src/lib/ranges.js'
+import { missingImports, importFixes } from '../src/lib/pythonImports.js'
 import { getLlmConfig, chatComplete, extractJson, LlmError } from '../server/llm/client.js'
 import type { ChatMessage } from '../server/llm/client.js'
 import {
   NARRATE_SYSTEM_PROMPT,
   buildNarrateUserPrompt,
   buildRepairPrompt,
+  buildSchemaRepairPrompt,
+  buildImportRepairPrompt,
 } from '../server/llm/prompts/narrate.js'
+
+/** Vercel: room for a 15 s retry-after wait plus two LLM calls (Hobby allows 60 s). */
+export const config = { maxDuration: 60 }
 
 // ---------------------------------------------------------------------------
 // In-memory response cache  (Req 12.4)
@@ -74,6 +81,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   ]
 
   let lastError = ''
+  let pending: NarrateRes | undefined
 
   for (let attempt = 0; attempt < 2; attempt++) {
     // ── LLM call ────────────────────────────────────────────────────────────
@@ -111,12 +119,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // ── Schema validation ────────────────────────────────────────────────────
     const validated = NarrateResSchema.safeParse(rawParsed)
     if (!validated.success) {
-      lastError = `Schema validation failed (attempt ${attempt + 1}): ${validated.error.issues[0]?.message}`
+      // name the exact failing fields, e.g. "steps[2].range: …"
+      lastError = `Schema validation failed (attempt ${attempt + 1}): ${describeIssue(validated.error.issues[0])}`
       messages.push({ role: 'assistant', content: raw })
-      messages.push({
-        role: 'user',
-        content: `The response failed schema validation: ${validated.error.issues[0]?.message}. Please return the complete JSON again with all required fields.`,
-      })
+      messages.push({ role: 'user', content: buildSchemaRepairPrompt(describeIssues(validated.error)) })
       continue
     }
 
@@ -132,11 +138,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       continue
     }
 
+    // ── The translation imports what it uses ─────────────────────────────────
+    const missing = missingImports(python.map(l => l.text).join('\n'))
+    if (missing.length > 0) {
+      pending = { steps, python, note }
+      lastError = `Missing imports (attempt ${attempt + 1}): ${importFixes(missing).join('; ')}`
+      messages.push({ role: 'assistant', content: raw })
+      messages.push({ role: 'user', content: buildImportRepairPrompt(importFixes(missing)) })
+      continue
+    }
+
     // ── Success ──────────────────────────────────────────────────────────────
     const result = { steps, python, note }
     responseCache.set(key, result)
     return res.status(200).json(result)
   }
+
+  // The repair still misses an import: return it uncached so the Python
+  // runtime error (NameError) shows in the output pane rather than a mumble.
+  if (pending) return res.status(200).json(pending)
 
   // Both attempts exhausted
   return res.status(502).json({

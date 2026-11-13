@@ -87,11 +87,11 @@ describe.each(['summon', 'narrate'] as const)('api/%s and Groq "Failed to valida
 })
 
 describe('model per purpose', () => {
-  it('narrate sends LLM_NARRATE_MODEL with low reasoning effort', async () => {
+  it('narrate sends LLM_NARRATE_MODEL with medium effort and a 6000-token cap', async () => {
     fetchMock.mockResolvedValue(ok(NARRATION))
     await call('narrate', narrateBody())
     expect(sentModel(fetchMock, 0)).toBe('openai/gpt-oss-20b')
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body as string).reasoning_effort).toBe('low')
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body as string)).toMatchObject({ reasoning_effort: 'medium', max_completion_tokens: 6000 })
   })
 
   it('summon sends LLM_MODEL and leaves reasoning effort at the provider default', async () => {

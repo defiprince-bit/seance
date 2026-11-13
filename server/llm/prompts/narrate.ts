@@ -21,7 +21,7 @@ export const NARRATE_SYSTEM_PROMPT = `\
 You are the ghost of a veteran COBOL programmer. Read the numbered COBOL program and \
 return ONLY this JSON object (no prose, no fences):
 
-{"steps":[{"range":[a,b],"quote":"optional","text":"..."}],
+{"steps":[{"range":[a,b],"quote":"optional","text":"..."}],   (one line is [5,5])
  "python":[{"text":"one Python line","maps":[a,b]},{"text":"import sys","maps":null}],
  "note":"..."}
 
@@ -39,6 +39,10 @@ Python equivalent. Plain and professional: no emoji, no exclamations, no Hallowe
 same labels, same order, same digits. Reproduce COBOL's arithmetic, not the ideal answer.
 - "maps": the COBOL lines [a, b] each Python line comes from, or null only for plumbing \
 (imports, blank lines, if __name__ == "__main__").
+- Start with the imports for everything the code uses, e.g.
+    import sys
+    from decimal import Decimal, getcontext, ROUND_DOWN
+  (add ROUND_HALF_UP or anything else you use). A missing import is a NameError.
 - Stdin (identical bytes go to both programs; the CSV header is never on stdin):
     n = int(sys.stdin.readline())
     for _ in range(n):
@@ -81,6 +85,23 @@ Total lines: ${req.lineCount}
 Numbered source:
 ${req.numberedSource}
 `
+}
+
+/** Repair turn for a schema failure; `issues` names each failing field. */
+export function buildSchemaRepairPrompt(issues: string): string {
+  return `\
+The JSON did not match the required shape. Fix these fields and return the complete JSON again:
+${issues}
+
+Every "range" and every non-null "maps" is two line numbers [a, b], e.g. [5, 5] for one line.`
+}
+
+/** Repair turn for a translation that uses names it never imports. */
+export function buildImportRepairPrompt(fixes: readonly string[]): string {
+  return `\
+The Python uses names it never imports, so it fails with NameError. Add these lines at the top \
+of "python" (with "maps": null) and return the complete JSON again:
+${fixes.map(f => `  ${f}`).join('\n')}`
 }
 
 /**

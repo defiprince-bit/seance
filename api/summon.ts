@@ -10,7 +10,7 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { SummonReqSchema, SummonResSchema, isSummonSuccess } from '../src/lib/schemas.js'
+import { SummonReqSchema, SummonResSchema, isSummonSuccess, describeIssue, describeIssues } from '../src/lib/schemas.js'
 import type { SummonRes } from '../src/lib/schemas.js'
 import { lintFixedFormat } from '../src/lib/cobolFormat.js'
 import { getLlmConfig, chatComplete, extractJson, LlmError } from '../server/llm/client.js'
@@ -20,6 +20,9 @@ import {
   buildSummonUserPrompt,
   buildSummonRepairPrompt,
 } from '../server/llm/prompts/summon.js'
+
+/** Vercel: room for a 15 s retry-after wait plus two LLM calls (Hobby allows 60 s). */
+export const config = { maxDuration: 60 }
 
 // ---------------------------------------------------------------------------
 // In-memory response cache  (Req 12.4)
@@ -116,7 +119,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Validate against SummonRes schema
     const validated = SummonResSchema.safeParse(parsed)
     if (!validated.success) {
-      lastError = `Schema validation failed (attempt ${attempt + 1}): ${validated.error.issues[0]?.message}`
+      // name the exact failing fields, e.g. "program.lines: Array must contain at most 120 element(s)"
+      lastError = `Schema validation failed (attempt ${attempt + 1}): ${describeIssue(validated.error.issues[0])}`
+      messages.push({ role: 'assistant', content: raw })
+      messages.push({
+        role: 'user',
+        content: `The JSON did not match the required shape. Fix these fields and return the complete JSON again:\n${describeIssues(validated.error)}`,
+      })
       continue // retry
     }
 

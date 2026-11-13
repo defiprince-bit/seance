@@ -11,7 +11,7 @@
  *
  * Retries owned here (callers own the "one silent retry" for bad answers):
  *   - network failure ("fetch failed"): one retry
- *   - HTTP 429 with retry-after ≤ 10 s: wait that long, retry once
+ *   - HTTP 429 with retry-after ≤ 15 s: wait that long, retry once (api/* allow 60 s)
  * Failures are thrown as LlmError with a kind the handlers can branch on.
  */
 
@@ -27,7 +27,7 @@ interface ChatCompletionRequest {
   messages: ChatMessage[]
   response_format?: { type: 'json_object' }
   temperature?: number
-  max_tokens?: number
+  max_completion_tokens?: number
   reasoning_effort?: 'low' | 'medium' | 'high'
 }
 
@@ -61,9 +61,14 @@ export interface LlmConfig {
   apiKey: string
   /** Groq reasoning models (gpt-oss) only; sent as reasoning_effort when set */
   reasoningEffort?: 'low' | 'medium' | 'high'
+  /** output cap, sent as max_completion_tokens when set */
+  maxCompletionTokens?: number
 }
 
 export type LlmPurpose = 'summon' | 'narrate'
+
+/** Output cap for narration on a gpt-oss model (reasoning + the JSON answer). */
+export const NARRATE_OUTPUT_TOKENS = 6000
 
 /** Reads LLM config from env. Narration may use LLM_NARRATE_MODEL; it falls back to LLM_MODEL. */
 export function getLlmConfig(purpose: LlmPurpose = 'summon'): LlmConfig {
@@ -75,17 +80,18 @@ export function getLlmConfig(purpose: LlmPurpose = 'summon'): LlmConfig {
   if (!model) throw new Error('LLM_MODEL environment variable is not set')
   if (!apiKey) throw new Error('LLM_API_KEY environment variable is not set')
 
-  // Narration on a gpt-oss model needs low reasoning effort: at Groq's default
-  // effort, gpt-oss-20b spent its whole output budget reasoning and returned no
-  // JSON (Groq reports that as 400 json_validate_failed). Summon is unchanged.
+  // Narration on a gpt-oss model: medium reasoning with a large output cap.
+  // At Groq's default cap, gpt-oss-20b spent all 2048 output tokens reasoning and
+  // returned no JSON (400 json_validate_failed); low effort answered but made
+  // mistakes. NARRATE_OUTPUT_TOKENS leaves room for both. Summon is unchanged.
   if (purpose === 'narrate' && /(^|\/)gpt-oss/.test(model)) {
-    return { baseUrl, model, apiKey, reasoningEffort: 'low' }
+    return { baseUrl, model, apiKey, reasoningEffort: 'medium', maxCompletionTokens: NARRATE_OUTPUT_TOKENS }
   }
   return { baseUrl, model, apiKey }
 }
 
 /** Longest retry-after we will wait inside one request. */
-export const MAX_RETRY_AFTER_SEC = 10
+export const MAX_RETRY_AFTER_SEC = 15
 
 /** retry-after is either delay-seconds or an HTTP date. Returns seconds, or undefined. */
 export function parseRetryAfter(header: string | null, now = Date.now()): number | undefined {
@@ -112,6 +118,7 @@ export async function chatComplete(messages: ChatMessage[], config: LlmConfig, j
   const body: ChatCompletionRequest = { model: config.model, messages, temperature: 0.2 }
   if (jsonMode) body.response_format = { type: 'json_object' }
   if (config.reasoningEffort) body.reasoning_effort = config.reasoningEffort
+  if (config.maxCompletionTokens) body.max_completion_tokens = config.maxCompletionTokens
 
   const send = () => withNetworkRetry(() => fetch(url, {
     method: 'POST',

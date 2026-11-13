@@ -10,12 +10,23 @@ import { z } from 'zod'
 // Shared leaf types
 // ---------------------------------------------------------------------------
 
-/** A contiguous range of 1-based inclusive line numbers [first, last]. */
-export const RangeSchema = z
-  .tuple([z.number().int().min(1), z.number().int().min(1)])
-  .refine(([a, b]) => b >= a, {
-    message: 'Range end must be ≥ start',
-  })
+/**
+ * Models often write a one-line range as [5]. At the JSON boundary that means
+ * [5, 5]; every other shape passes through unchanged for the tuple to judge.
+ */
+export function widenSingleLine(value: unknown): unknown {
+  return Array.isArray(value) && value.length === 1 && typeof value[0] === 'number'
+    ? [value[0], value[0]]
+    : value
+}
+
+const LinePair = z.tuple([z.number().int().min(1), z.number().int().min(1)])
+
+/** A contiguous range of 1-based inclusive line numbers [first, last]. [n] is read as [n, n]. */
+export const RangeSchema = z.preprocess(
+  widenSingleLine,
+  LinePair.refine(([a, b]) => b >= a, { message: 'Range end must be ≥ start' }),
+)
 
 /** One narration step: the COBOL lines it covers, an optional ghost quote, and the explanation. */
 export const StepSchema = z.object({
@@ -29,10 +40,11 @@ export type Step = z.infer<typeof StepSchema>
 /** One Python line and the COBOL range it came from (or null if it has no mapping). */
 export const PyLineSchema = z.object({
   text: z.string(),
-  maps: z
-    .tuple([z.number().int().min(1), z.number().int().min(1)])
-    .refine(([a, b]) => b >= a, { message: 'maps end must be ≥ start' })
-    .nullable(),
+  /** [a, b], or [n] read as [n, n], or null for plumbing */
+  maps: z.preprocess(
+    widenSingleLine,
+    LinePair.refine(([a, b]) => b >= a, { message: 'maps end must be ≥ start' }).nullable(),
+  ),
 })
 
 export type PyLine = z.infer<typeof PyLineSchema>
@@ -132,6 +144,26 @@ export const NarrateResSchema = z.object({
 })
 
 export type NarrateRes = z.infer<typeof NarrateResSchema>
+
+// ---------------------------------------------------------------------------
+// Naming the failing field in a retry message
+// ---------------------------------------------------------------------------
+
+/** "steps[2].range: Array must contain at least 2 element(s)" */
+export function describeIssue(issue: z.ZodIssue): string {
+  const path = issue.path.reduce<string>(
+    (acc, part) => (typeof part === 'number' ? `${acc}[${part}]` : acc ? `${acc}.${part}` : String(part)),
+    '',
+  )
+  return path ? `${path}: ${issue.message}` : issue.message
+}
+
+/** Up to `max` issues, one per line, each naming its field. */
+export function describeIssues(error: z.ZodError, max = 5): string {
+  const lines = error.issues.slice(0, max).map(i => `- ${describeIssue(i)}`)
+  if (error.issues.length > max) lines.push(`- …and ${error.issues.length - max} more`)
+  return lines.join('\n')
+}
 
 // ---------------------------------------------------------------------------
 // Agreement

@@ -11,7 +11,7 @@
  *
  * Aborts (Esc) are rethrown untouched. No LLM or runner keys live in the browser.
  */
-import type { ZodType } from 'zod'
+import type { ZodType, ZodTypeDef } from 'zod'
 import { SummonResSchema, RunSchema, NarrateResSchema } from '../lib/schemas.ts'
 import type { SummonRes, Run, NarrateRes } from '../lib/schemas.ts'
 import { withNetworkRetry, isNetworkError } from '../lib/retry.ts'
@@ -51,7 +51,8 @@ export async function apiPost<T>(
   path: string,
   step: PipelineStep,
   body: unknown,
-  schema: ZodType<T>,
+  // output type T; any input type (schemas with z.preprocess take unknown)
+  schema: ZodType<T, ZodTypeDef, unknown>,
   signal?: AbortSignal,
 ): Promise<T> {
   let res: Response
