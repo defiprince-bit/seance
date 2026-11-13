@@ -16,6 +16,7 @@
  */
 
 import { withNetworkRetry } from '../../src/lib/retry.js'
+import { logFailedGeneration, parseFailedGeneration } from './devLog.js'
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant'
@@ -63,12 +64,15 @@ export interface LlmConfig {
   reasoningEffort?: 'low' | 'medium' | 'high'
   /** output cap, sent as max_completion_tokens when set */
   maxCompletionTokens?: number
+  /** which API asked (for the dev failure log) */
+  purpose?: LlmPurpose
 }
 
 export type LlmPurpose = 'summon' | 'narrate'
 
-/** Output cap for narration on a gpt-oss model (reasoning + the JSON answer). */
+/** Output caps on gpt-oss models: room for reasoning plus the JSON answer. */
 export const NARRATE_OUTPUT_TOKENS = 6000
+export const SUMMON_OUTPUT_TOKENS = 6000
 
 /** Reads LLM config from env. Narration may use LLM_NARRATE_MODEL; it falls back to LLM_MODEL. */
 export function getLlmConfig(purpose: LlmPurpose = 'summon'): LlmConfig {
@@ -80,14 +84,17 @@ export function getLlmConfig(purpose: LlmPurpose = 'summon'): LlmConfig {
   if (!model) throw new Error('LLM_MODEL environment variable is not set')
   if (!apiKey) throw new Error('LLM_API_KEY environment variable is not set')
 
-  // Narration on a gpt-oss model: medium reasoning with a large output cap.
-  // At Groq's default cap, gpt-oss-20b spent all 2048 output tokens reasoning and
-  // returned no JSON (400 json_validate_failed); low effort answered but made
-  // mistakes. NARRATE_OUTPUT_TOKENS leaves room for both. Summon is unchanged.
-  if (purpose === 'narrate' && /(^|\/)gpt-oss/.test(model)) {
-    return { baseUrl, model, apiKey, reasoningEffort: 'medium', maxCompletionTokens: NARRATE_OUTPUT_TOKENS }
+  // gpt-oss models reason before answering. At Groq's default output cap,
+  // gpt-oss-20b spent all 2048 tokens reasoning and returned no JSON
+  // (400 json_validate_failed), so both purposes get a large cap.
+  //   narrate: medium effort (low answered, but made mistakes)
+  //   summon:  provider-default effort, cap only
+  if (/(^|\/)gpt-oss/.test(model)) {
+    return purpose === 'narrate'
+      ? { baseUrl, model, apiKey, purpose, reasoningEffort: 'medium', maxCompletionTokens: NARRATE_OUTPUT_TOKENS }
+      : { baseUrl, model, apiKey, purpose, maxCompletionTokens: SUMMON_OUTPUT_TOKENS }
   }
-  return { baseUrl, model, apiKey }
+  return { baseUrl, model, apiKey, purpose }
 }
 
 /** Longest retry-after we will wait inside one request. */
@@ -144,7 +151,15 @@ export async function chatComplete(messages: ChatMessage[], config: LlmConfig, j
     if (response.status === 429 || response.status === 503) {
       throw new LlmError('rate-limited', response.status, message, parseRetryAfter(response.headers?.get('retry-after') ?? null))
     }
-    if (isBadJson(response.status, text)) throw new LlmError('bad-json', response.status, message)
+    if (isBadJson(response.status, text)) {
+      // dev-only: keep what the model generated so we can see why it was rejected
+      const parsed = parseFailedGeneration(text)
+      await logFailedGeneration({
+        model: config.model, purpose: config.purpose, status: response.status,
+        message: parsed?.message ?? '', failedGeneration: parsed?.failedGeneration ?? '',
+      })
+      throw new LlmError('bad-json', response.status, message)
+    }
     throw new LlmError('http', response.status, message)
   }
 

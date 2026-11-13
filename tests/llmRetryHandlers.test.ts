@@ -94,11 +94,13 @@ describe('model per purpose', () => {
     expect(JSON.parse(fetchMock.mock.calls[0][1].body as string)).toMatchObject({ reasoning_effort: 'medium', max_completion_tokens: 6000 })
   })
 
-  it('summon sends LLM_MODEL and leaves reasoning effort at the provider default', async () => {
+  it('summon sends LLM_MODEL with a 6000-token cap and the provider-default effort', async () => {
     fetchMock.mockResolvedValue(ok(PROGRAM))
     await call('summon', summonBody())
     expect(sentModel(fetchMock, 0)).toBe('openai/gpt-oss-120b')
-    expect('reasoning_effort' in JSON.parse(fetchMock.mock.calls[0][1].body as string)).toBe(false)
+    const sent = JSON.parse(fetchMock.mock.calls[0][1].body as string)
+    expect('reasoning_effort' in sent).toBe(false)
+    expect(sent.max_completion_tokens).toBe(6000)
   })
 
   it('narrate falls back to LLM_MODEL when LLM_NARRATE_MODEL is unset', async () => {

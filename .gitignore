@@ -22,6 +22,8 @@ test-results/
 Thumbs.db
 *.log
 *.local
+# dev-only LLM failure log (server/llm/devLog.ts)
+.dev-logs/
 
 # editor project files (from Vite template)
 .vscode/*

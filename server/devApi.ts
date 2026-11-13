@@ -16,7 +16,12 @@ export function devApi(): Plugin {
     apply: 'serve',
 
     configResolved(config) {
+      // Vitest also loads vite.config in serve mode: keep real .env values and
+      // the dev log out of the test process
+      if (process.env['VITEST']) return
       Object.assign(process.env, loadEnv(config.mode, config.root, ''))
+      // dev-only: record Groq's failed_generation on json_validate_failed (server/llm/devLog.ts)
+      process.env['SEANCE_DEV_LOG'] ??= '1'
     },
 
     configureServer(server) {

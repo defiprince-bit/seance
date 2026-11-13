@@ -137,10 +137,15 @@ describe('getLlmConfig: LLM_NARRATE_MODEL', () => {
   })
 
   // regression: at Groq's default 2048-token cap gpt-oss-20b returned empty output (400 json_validate_failed)
-  it('narration on a gpt-oss model gets medium effort and a 6000-token cap; summon gets neither', () => {
+  it('on a gpt-oss model: narration gets medium effort + 6000 tokens; summon gets 6000 tokens at default effort', () => {
     vi.stubEnv('LLM_NARRATE_MODEL', 'openai/gpt-oss-20b')
     expect(getLlmConfig('narrate')).toMatchObject({ reasoningEffort: 'medium', maxCompletionTokens: 6000 })
     expect(getLlmConfig('summon').reasoningEffort).toBeUndefined()
+    expect(getLlmConfig('summon').maxCompletionTokens).toBe(6000)
+  })
+
+  it('a non-gpt-oss summon model gets no output cap', () => {
+    vi.stubEnv('LLM_MODEL', 'llama-3.3-70b-versatile')
     expect(getLlmConfig('summon').maxCompletionTokens).toBeUndefined()
   })
 
