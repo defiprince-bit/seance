@@ -75,6 +75,7 @@ describe('routing (Req 11.1)', () => {
     const cfg = JSON.parse(readFileSync('vercel.json', 'utf8')) as { rewrites: { source: string; destination: string }[] }
     const sources = cfg.rewrites.map(r => r.source)
     expect(sources).toContain('/seance')
+    expect(sources).toContain('/seance/') // :path* does not match a bare trailing slash on Vercel
     expect(sources).toContain('/seance/:path*')
     for (const r of cfg.rewrites) {
       expect(r.destination).toBe('/index.html')
