@@ -1,0 +1,58 @@
+/* Landing below the fold: how it works, inside a séance, spirits, why, final call, footer. */
+.band{position:relative;padding:96px var(--s-14);border-top:1px solid #34343A;scroll-margin-top:var(--s-4)}
+.sh{display:flex;justify-content:space-between;align-items:end;gap:var(--s-8);margin-bottom:var(--s-10)}
+.eyebrow{font:500 var(--text-xs)/1 var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--card-muted)}
+.h2{margin:10px 0 0;font:400 var(--fs-h2)/1 var(--font-spooky);color:var(--card-text)}
+.accent{color:var(--pumpkin)}
+.sh p{max-width:380px;margin:0;color:var(--card-body)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-5);margin:0;padding:0;list-style:none}
+.card{padding:28px;border-radius:var(--r-tile);background:var(--charcoal-raised);box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+  color:var(--card-body);text-decoration:none;display:block}
+.card p{margin:0}
+.n{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--pumpkin);color:#fff;
+  font:400 var(--text-lg)/1 var(--font-spooky)}
+.cardTitle{margin:18px 0 var(--s-2);font:400 var(--fs-card)/1.05 var(--font-spooky);color:var(--card-text)}
+
+/* inside a séance */
+.peek{display:grid;grid-template-columns:7fr 5fr;gap:48px;align-items:center}
+.peek>*{min-width:0}
+.list{margin:var(--s-6) 0 0;padding:0;list-style:none;display:grid;gap:var(--s-3)}
+.list li{display:flex;gap:var(--s-3);color:var(--card-text)}
+.list li::before{content:"";flex:none;width:8px;height:8px;margin-top:7px;border-radius:50%;background:var(--pumpkin)}
+.foot{margin:var(--s-4) 0 0;font-size:var(--text-xs);color:var(--card-muted)}
+
+/* spirits */
+.spirit{transition:transform var(--d-base) var(--ease-out)}
+a.spirit:hover{transform:translateY(-3px)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s-2)}
+.spiritName{margin:0;font:400 var(--fs-spirit)/1.05 var(--font-spooky);color:var(--card-text)}
+.yr{font:400 18px/1 var(--font-crt);color:var(--card-muted)}
+.ep{color:var(--pumpkin);margin:6px 0 var(--s-4);font-size:var(--text-sm);font-weight:500}
+.snippet{margin:0 0 var(--s-4);padding:var(--s-3);border-radius:var(--r-md);font:400 var(--text-xs)/18px var(--font-code);
+  color:var(--phosphor);overflow:hidden;white-space:pre}
+.resting{background:transparent;box-shadow:inset 0 0 0 1px var(--charcoal-line)}
+.tag{display:inline-flex;align-items:center;height:22px;padding:0 var(--s-2);margin-bottom:var(--s-4);border-radius:var(--r-pill);
+  border:1px dashed var(--charcoal-line);font-size:var(--text-xs);color:var(--card-muted)}
+
+/* why */
+.why{display:grid;grid-template-columns:7fr 5fr;gap:var(--s-14);align-items:start}
+.quote{margin:0;font:400 var(--fs-quote)/1.08 var(--font-spooky);color:var(--card-text)}
+.why p{color:var(--card-body);margin:0 0 var(--s-4)}
+
+/* final + footer */
+.final{text-align:center;padding:110px var(--s-14)}
+.final p{color:var(--card-body);margin:14px 0 var(--s-8)}
+.ctas{display:flex;justify-content:center}
+.footRow{display:flex;justify-content:space-between;align-items:center;gap:var(--s-6);padding:28px 240px 36px var(--s-14);
+  border-top:1px solid #34343A;font-size:var(--text-xs);color:var(--card-muted)}
+.footRow p{margin:0}
+.footWm b{font-size:22px}
+
+@media (max-width:1100px){.grid3{grid-template-columns:1fr 1fr}.peek,.why{grid-template-columns:1fr}}
+@media (max-width:767px){
+  .band{padding:64px var(--s-5)}
+  .sh{flex-direction:column;align-items:start}
+  .grid3{grid-template-columns:1fr}
+  .final{padding:72px var(--s-5)}
+  .footRow{flex-direction:column;align-items:start;padding:var(--s-6) 120px var(--s-6) var(--s-5)}
+}

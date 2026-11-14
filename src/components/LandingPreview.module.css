@@ -1,0 +1,33 @@
+/* Static picture of a séance for the "Inside a séance" band (app palette, not landing). */
+.preview{position:relative;border-radius:var(--r-lg);border:1px solid var(--seam-strong);background:var(--crypt);
+  box-shadow:var(--shadow-pop);overflow:hidden;color:var(--bone)}
+.task{display:flex;align-items:center;gap:10px;padding:14px var(--s-4);border-bottom:1px solid var(--seam);font-size:var(--text-sm)}
+.task svg{flex:none}
+.q{flex:1;min-width:0;color:var(--bone)}
+.q span{color:var(--dust)}
+.pill{display:inline-flex;align-items:center;gap:7px;height:26px;padding:0 10px;border-radius:var(--r-pill);border:1px solid var(--seam);
+  font-size:var(--text-xs);color:var(--ash);background:var(--crypt);white-space:nowrap}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--phosphor)}
+.body{display:grid;grid-template-columns:1.25fr 1fr}
+.body>*{min-width:0}
+.code{padding:14px 0;font:400 var(--text-xs)/20px var(--font-code);color:var(--phosphor);text-shadow:var(--glow-phosphor);overflow:hidden}
+.code div{padding:0 var(--s-4) 0 44px;white-space:pre;position:relative}
+.code b{position:absolute;left:var(--s-3);width:22px;text-align:right;color:var(--dust);font-weight:400;text-shadow:none}
+.code .on{background:var(--candle-veil)}
+.code .on::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--candle)}
+.kw{color:#D4F5DC}
+.lit{color:var(--candle)}
+.ghost{border-left:1px solid var(--seam);padding:18px}
+.who{display:flex;align-items:center;gap:var(--s-2);color:var(--ecto);font-size:var(--text-xs);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.who svg{width:16px;height:16px}
+.ghost blockquote{margin:0;font:italic 400 var(--text-lg)/1.3 var(--font-display);color:var(--bone)}
+.ghost p{margin:10px 0 0;color:var(--ash);font-size:var(--text-sm)}
+.py{border-top:1px solid var(--seam);padding:var(--s-3) var(--s-4);display:flex;flex-wrap:wrap;gap:var(--s-3);align-items:center;
+  font:400 var(--text-xs)/1.5 var(--font-code);color:var(--ash)}
+.tag{font:500 11px/1 var(--font-body);letter-spacing:.1em;text-transform:uppercase;color:var(--dust)}
+.match{margin-left:auto;color:var(--phosphor);font-family:var(--font-body);font-size:var(--text-xs)}
+@media (max-width:767px){
+  .body{grid-template-columns:1fr}
+  .ghost{border-left:0;border-top:1px solid var(--seam)}
+  .pill{display:none}
+}

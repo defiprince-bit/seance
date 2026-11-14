@@ -83,7 +83,7 @@ Phase A (tasks 1–9) is the end-to-end MVP: one live séance from task to agree
   - Tablet tabs, mobile segmented control, GhostCaption, bottom-sheet picker, reduced-motion behaviour, focus rings
   - _Requirements: 10.1, 10.2, 10.3, 10.4_
 
-- [ ] 14. Landing page
+- [x] 14. Landing page
   - Match `design/mocks/landing.html`; route `/` and `/seance`; corrected footnote copy
   - _Requirements: 11.1, 11.2, 11.3, 11.4_
 
