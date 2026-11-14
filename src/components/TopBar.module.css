@@ -15,12 +15,6 @@
 .div { width: 1px; height: 20px; background: var(--seam); }
 .title { font: italic 400 19px/1 var(--font-display); color: var(--bone); }
 .spacer { flex: 1; }
-.langTrigger {
-  display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px 0 12px;
-  border-radius: var(--r-sm); border: 1px solid var(--seam-strong); background: var(--crypt);
-  font-size: var(--text-sm); color: var(--ash);
-}
-.langName { font: italic 400 17px/1 var(--font-display); color: var(--bone); }
 .endBtn {
   height: 36px; padding: 0 14px; border-radius: var(--r-sm); border: 1px solid transparent;
   background: transparent; color: var(--ash); font: 500 var(--text-sm)/1 var(--font-body); cursor: pointer;
@@ -30,5 +24,5 @@
   .topbar { padding: 0 52px 0 var(--s-4); gap: var(--s-3); }
   .topbarWeb { width: 44px; }
   .topbarWeb svg { width: 44px; height: 44px; }
-  .div, .title, .endBtn, .langLabel { display: none; }
+  .div, .title, .endBtn { display: none; }
 }

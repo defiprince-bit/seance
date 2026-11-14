@@ -71,7 +71,7 @@ Phase A (tasks 1–9) is the end-to-end MVP: one live séance from task to agree
 - [ ] 10.3 Golden replay test: every fixture parses and its runs agree
   - _Requirements: 8.1_
 
-- [ ] 11. Language picker
+- [x] 11. Language picker
   - LanguagePicker dialog with COBOL enabled and Fortran/BASIC "Resting"; focus trap, arrow keys, Esc
   - _Requirements: 9.1, 9.2, 9.3_
 

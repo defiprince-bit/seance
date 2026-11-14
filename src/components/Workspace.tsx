@@ -118,7 +118,15 @@ export function Workspace() {
 
   return (
     <AppShell
-      top={<TopBar sessionTitle={program?.title ?? ''} status={pillStatus(state)} onEnd={() => { setPlayRequested(false); reset() }} />}
+      top={
+        <TopBar
+          sessionTitle={program?.title ?? ''}
+          status={pillStatus(state)}
+          onEnd={() => { setPlayRequested(false); reset() }}
+          // only COBOL can be chosen, so the request is unchanged (language 'cobol')
+          onSpiritConfirm={() => { if (state.task.trim()) start(); else edit() }}
+        />
+      }
       task={
         <TaskInput
           value={state.task}

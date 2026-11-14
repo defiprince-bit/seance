@@ -1,9 +1,10 @@
 /**
- * TopBar — 56px app header: Wordmark, session title, static LanguageTrigger,
- * StatusPill, End séance. Language picker is a later task, so the trigger is chrome only.
+ * TopBar — 56px app header: Wordmark, session title, LanguageTrigger (opens the
+ * spirit picker), StatusPill, End séance.
  */
 import type { PillTone } from '../state/seance.ts'
 import { StatusPill } from './StatusPill.tsx'
+import { LanguageTrigger } from './LanguageTrigger.tsx'
 import s from './TopBar.module.css'
 
 function PlanchetteMark() {
@@ -22,9 +23,11 @@ interface TopBarProps {
   sessionTitle: string
   status: { tone: PillTone; label: string }
   onEnd: () => void
+  /** "Summon with {lang}" in the spirit picker */
+  onSpiritConfirm: (id: string) => void
 }
 
-export function TopBar({ sessionTitle, status, onEnd }: TopBarProps) {
+export function TopBar({ sessionTitle, status, onEnd, onSpiritConfirm }: TopBarProps) {
   return (
     <header className={s.topbar}>
       {/* the one small cobweb allowed in the app chrome */}
@@ -46,13 +49,7 @@ export function TopBar({ sessionTitle, status, onEnd }: TopBarProps) {
       <span className={s.title}>{sessionTitle || 'New séance'}</span>
       <span className={s.spacer} />
 
-      <span className={s.langTrigger}>
-        <span className={s.langLabel}>Spirit</span>
-        <b className={s.langName}>COBOL</b>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-          <path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" strokeWidth="1.4"/>
-        </svg>
-      </span>
+      <LanguageTrigger onConfirm={onSpiritConfirm} />
 
       <StatusPill tone={status.tone} label={status.label} />
       <button className={s.endBtn} onClick={onEnd} type="button">End séance</button>

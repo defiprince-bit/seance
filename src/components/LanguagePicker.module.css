@@ -1,0 +1,96 @@
+/* Spirit picker, desktop dialog (design/mocks/picker.html). Bottom sheet is task 13. */
+.scrim {
+  position: fixed; inset: 0; z-index: 40;
+  background: rgba(6,5,8,.72); backdrop-filter: blur(3px);
+  animation: riseIn var(--d-base) var(--ease-out) both;
+}
+.dialog {
+  position: fixed; z-index: 41; left: 50%; top: 50%;
+  width: min(1080px, calc(100vw - 64px)); max-height: calc(100vh - 48px); overflow: auto;
+  transform: translate(-50%, -50%);
+  background: var(--crypt); border: 1px solid var(--seam-strong);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-pop);
+}
+.dialog::before {
+  content: ""; position: absolute; left: 50%; top: -220px; width: 700px; height: 400px;
+  transform: translateX(-50%); pointer-events: none;
+  background: radial-gradient(closest-side, rgba(233,169,87,.12), transparent);
+  animation: breathe var(--d-breathe) ease-in-out infinite;
+}
+.dh { position: relative; display: flex; align-items: start; gap: var(--s-4); padding: var(--s-8) var(--s-8) var(--s-6); }
+.eyebrow { font: 500 var(--text-xs)/1 var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--ash); }
+.title { margin: var(--s-2) 0; font: 400 var(--text-xl)/1.1 var(--font-display); color: var(--bone); }
+.title em { font-style: italic; color: var(--candle); }
+.lede { margin: 0; color: var(--ash); max-width: 520px; }
+.close {
+  position: absolute; top: var(--s-6); right: var(--s-6);
+  width: 30px; height: 30px; display: grid; place-items: center;
+  border-radius: var(--r-sm); border: 1px solid transparent; background: none; color: var(--ash); cursor: pointer;
+}
+.close:hover { background: rgba(255,255,255,.05); color: var(--bone); }
+
+.cards { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-4); padding: 0 var(--s-8); }
+.card {
+  position: relative; display: flex; flex-direction: column; gap: var(--s-3);
+  padding: var(--s-5); border-radius: var(--r-md); border: 1px solid var(--seam);
+  background: var(--void); color: var(--bone); font: inherit; text-align: left; cursor: pointer;
+  transition: border-color var(--d-fast) var(--ease-out), transform var(--d-base) var(--ease-out), background var(--d-fast) var(--ease-out);
+}
+.card:hover { border-color: var(--seam-strong); transform: translateY(-2px); }
+.card[aria-checked="true"] {
+  border-color: var(--candle); box-shadow: var(--glow-candle);
+  background: linear-gradient(180deg, rgba(233,169,87,.06), transparent 50%), var(--void);
+}
+.top { display: flex; align-items: baseline; justify-content: space-between; }
+.name { font: italic 400 30px/1 var(--font-display); color: var(--bone); }
+.yr { font: 400 18px/1 var(--font-crt); color: var(--dust); }
+.ep { display: flex; justify-content: space-between; align-items: center; margin-top: -6px; color: var(--ecto); font-size: var(--text-sm); }
+.sel { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--candle); font-weight: 500; }
+.resting {
+  height: 22px; display: inline-flex; align-items: center; padding: 0 8px;
+  border-radius: var(--r-pill); border: 1px dashed var(--seam-strong);
+  font-size: var(--text-xs); color: var(--ash);
+}
+.desc { display: block; color: var(--ash); font-size: var(--text-sm); }
+.snippet {
+  display: block; padding: 10px 12px; border-radius: var(--r-sm); border: 1px solid var(--seam);
+  font: 400 11.5px/18px var(--font-code); color: var(--phosphor); text-shadow: var(--glow-phosphor);
+  white-space: pre; overflow: hidden;
+}
+.traits { display: flex; flex-wrap: wrap; gap: 6px; }
+.traits span {
+  height: 22px; display: inline-flex; align-items: center; padding: 0 8px;
+  border-radius: var(--r-pill); border: 1px solid var(--seam); font-size: var(--text-xs); color: var(--ash);
+}
+.dialect { margin-top: auto; display: flex; flex-direction: column; gap: 6px; }
+.dialectLabel { font-size: var(--text-xs); color: var(--dust); }
+.select {
+  display: flex; align-items: center; height: 34px; padding: 0 10px;
+  border-radius: var(--r-sm); border: 1px solid var(--seam); background: var(--altar);
+  font-size: var(--text-sm); color: var(--bone);
+}
+/* resting spirits: dashed, quiet, not interactive */
+.card.rest { cursor: default; border-style: dashed; background: transparent; }
+.card.rest:hover { transform: none; border-color: var(--seam); }
+.card.rest .name { font-size: 22px; color: var(--ash); }
+
+.df {
+  position: relative; display: flex; align-items: center; gap: var(--s-3);
+  padding: var(--s-6) var(--s-8); margin-top: var(--s-6); border-top: 1px solid var(--seam);
+}
+.foot { flex: 1; font-size: var(--text-xs); color: var(--dust); }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px;
+  border-radius: var(--r-sm); border: 1px solid var(--seam-strong); background: transparent;
+  color: var(--bone); font: 500 var(--text-base)/1 var(--font-body); cursor: pointer;
+  transition: background var(--d-fast) var(--ease-out), border-color var(--d-fast) var(--ease-out), transform var(--d-instant) var(--ease-out);
+}
+.btn:hover { border-color: var(--ash); background: rgba(255,255,255,.03); }
+.btn:active { transform: translateY(1px); }
+.candle { background: var(--candle); border-color: var(--candle); color: var(--candle-ink); }
+.candle:hover { background: #F0B56A; border-color: #F0B56A; }
+.candle:active { background: var(--candle-deep); }
+
+/* keyframes copied as-is from seance-design.md (CSS modules scope names per file) */
+@keyframes breathe{0%,100%{opacity:.35}50%{opacity:.85}}
+@keyframes riseIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}

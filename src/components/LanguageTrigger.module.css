@@ -1,0 +1,12 @@
+.trigger {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 32px; padding: 0 10px 0 12px;
+  border-radius: var(--r-sm); border: 1px solid var(--seam-strong);
+  background: var(--crypt); color: var(--ash);
+  font: 400 var(--text-sm)/1 var(--font-body); cursor: pointer;
+  transition: border-color var(--d-fast) var(--ease-out);
+}
+.trigger:hover { border-color: var(--ash); }
+.label { font-size: var(--text-sm); }
+.name { font: italic 400 17px/1 var(--font-display); color: var(--bone); }
+@media (max-width: 767px) { .label { display: none; } }
