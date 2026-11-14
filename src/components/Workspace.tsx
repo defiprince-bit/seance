@@ -33,6 +33,8 @@ const PLAY_STEP_MS = 5000
 export function Workspace() {
   const { state, dispatch, summon, replay, abort, reset } = useSeance()
   const [playRequested, setPlayRequested] = useState(false)
+  // the CSV attached in the task bar: only typed summons use it (chips bring their own)
+  const [attached, setAttached] = useState<CsvData>()
   const { error, program } = state
 
   const activeRange = activeRangeOf(state.steps, state.activeIndex)
@@ -62,11 +64,11 @@ export function Workspace() {
     return () => window.removeEventListener('keydown', onKey)
   }, [abort, dispatch])
 
-  // a typed task never carries a chip's sample CSV (file attach is task 12)
+  // a typed task (no arguments) sends the attached CSV, or none; never a chip's sample
   const start = useCallback((task?: string, csv?: CsvData | null) => {
     setPlayRequested(false)
-    void summon(task, task === undefined && csv === undefined ? null : csv)
-  }, [summon])
+    void summon(task, task === undefined && csv === undefined ? attached ?? null : csv)
+  }, [summon, attached])
 
   // A chip replays its golden séance (Req 2.2); with no fixture it summons live.
   const pick = useCallback((label: string) => {
@@ -132,7 +134,9 @@ export function Workspace() {
           value={state.task}
           phase={state.phase}
           hasRun={program !== undefined || error !== undefined}
+          file={attached}
           onChange={task => dispatch({ type: 'SET_TASK', task })}
+          onFileChange={setAttached}
           onSubmit={() => start()}
         />
       }

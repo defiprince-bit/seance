@@ -1,0 +1,13 @@
+.file {
+  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+  height: 30px; padding: 0 6px 0 10px; border-radius: var(--r-sm);
+  background: var(--crypt); border: 1px solid var(--seam);
+  font: 400 12px/1 var(--font-code); color: var(--ash);
+}
+.remove {
+  width: 20px; height: 20px; display: grid; place-items: center;
+  border: 0; border-radius: var(--r-xs); background: none; color: var(--dust); cursor: pointer;
+}
+.remove:hover:not(:disabled) { color: var(--bone); background: rgba(255,255,255,.06); }
+.remove:disabled { cursor: default; opacity: .5; }
+/* the steering hides the chip below 768; responsive layouts are task 13 */

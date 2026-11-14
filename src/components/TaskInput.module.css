@@ -15,9 +15,20 @@
 .input:focus-visible { box-shadow: none; }
 .input::placeholder { color: var(--dust); }
 .input:disabled { opacity: .6; }
+.wrap { flex-shrink: 0; }
+.attach {
+  display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  height: 30px; padding: 0 8px; border-radius: var(--r-sm);
+  border: 1px solid transparent; background: none; color: var(--ash);
+  font: 400 12px/1 var(--font-code); cursor: pointer;
+}
+.attach:hover:not(:disabled) { color: var(--bone); border-color: var(--seam); background: var(--crypt); }
+.attach:disabled { opacity: .5; cursor: default; }
+.fileError { margin: 0 var(--s-6) var(--s-2); font-size: var(--text-sm); color: var(--danger); }
 .count { font-size: var(--text-xs); color: var(--dust); flex-shrink: 0; padding-right: 8px; }
 @media (max-width: 767px) {
   .taskbar { padding: var(--s-3) var(--s-4) var(--s-2); }
   .task { min-height: 46px; padding: 0 6px 0 12px; }
   .input { font-size: 15px; }
+  .fileError { margin: 0 var(--s-4) var(--s-2); }
 }

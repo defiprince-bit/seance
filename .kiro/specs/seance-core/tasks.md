@@ -75,7 +75,7 @@ Phase A (tasks 1–9) is the end-to-end MVP: one live séance from task to agree
   - LanguagePicker dialog with COBOL enabled and Fortran/BASIC "Resting"; focus trap, arrow keys, Esc
   - _Requirements: 9.1, 9.2, 9.3_
 
-- [ ] 12. File attach
+- [x] 12. File attach
   - FileChip, 64 KB / 500-row limits, CSV header passed to summon, body encoded with `encodeStdin`
   - _Requirements: 1.4, 1.5, 1.7_
 
