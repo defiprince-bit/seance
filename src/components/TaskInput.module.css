@@ -24,11 +24,49 @@
 }
 .attach:hover:not(:disabled) { color: var(--bone); border-color: var(--seam); background: var(--crypt); }
 .attach:disabled { opacity: .5; cursor: default; }
-.fileError { margin: 0 var(--s-6) var(--s-2); font-size: var(--text-sm); color: var(--danger); }
+/* attached state on mobile: dot badge + replace / remove popover */
+.attachWrap { position: relative; display: inline-flex; flex-shrink: 0; }
+.attached { position: relative; color: var(--bone); }
+.badge {
+  position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--candle); box-shadow: 0 0 0 2px var(--altar);
+}
+.popover {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 20;
+  display: flex; flex-direction: column; gap: 4px; min-width: 200px; padding: 8px;
+  background: var(--altar); border: 1px solid var(--seam-strong);
+  border-radius: var(--r-md); box-shadow: var(--shadow-pop);
+}
+.popoverName { padding: 4px 6px 6px; font: 400 12px/1.3 var(--font-code); color: var(--ash); }
+.popoverBtn {
+  height: 36px; padding: 0 10px; text-align: left; border-radius: var(--r-sm);
+  border: 1px solid transparent; background: none; color: var(--bone);
+  font: 500 var(--text-sm)/1 var(--font-body); cursor: pointer;
+}
+.popoverBtn:hover { background: rgba(255,255,255,.05); }.fileError { margin: 0 var(--s-6) var(--s-2); font-size: var(--text-sm); color: var(--danger); }
 .count { font-size: var(--text-xs); color: var(--dust); flex-shrink: 0; padding-right: 8px; }
 @media (max-width: 767px) {
   .taskbar { padding: var(--s-3) var(--s-4) var(--s-2); }
   .task { min-height: 46px; padding: 0 6px 0 12px; }
   .input { font-size: 15px; }
-  .fileError { margin: 0 var(--s-4) var(--s-2); }
+  /* attached state on mobile: dot badge + replace / remove popover */
+.attachWrap { position: relative; display: inline-flex; flex-shrink: 0; }
+.attached { position: relative; color: var(--bone); }
+.badge {
+  position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--candle); box-shadow: 0 0 0 2px var(--altar);
+}
+.popover {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 20;
+  display: flex; flex-direction: column; gap: 4px; min-width: 200px; padding: 8px;
+  background: var(--altar); border: 1px solid var(--seam-strong);
+  border-radius: var(--r-md); box-shadow: var(--shadow-pop);
+}
+.popoverName { padding: 4px 6px 6px; font: 400 12px/1.3 var(--font-code); color: var(--ash); }
+.popoverBtn {
+  height: 36px; padding: 0 10px; text-align: left; border-radius: var(--r-sm);
+  border: 1px solid transparent; background: none; color: var(--bone);
+  font: 500 var(--text-sm)/1 var(--font-body); cursor: pointer;
+}
+.popoverBtn:hover { background: rgba(255,255,255,.05); }.fileError { margin: 0 var(--s-4) var(--s-2); }
 }

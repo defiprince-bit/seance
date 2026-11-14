@@ -11,6 +11,8 @@ import { checkCsvMeta, checkCsvFile } from '../lib/csvFile.ts'
 import { SummonButton } from './SummonButton.tsx'
 import type { SummonState } from './SummonButton.tsx'
 import { FileChip } from './FileChip.tsx'
+import { AttachButton } from './AttachButton.tsx'
+import { useLayout } from '../state/useMedia.ts'
 import s from './TaskInput.module.css'
 
 /** "Edit the task" focuses and selects this input. */
@@ -42,6 +44,8 @@ export function TaskInput({ value, phase, hasRun, file, onChange, onFileChange, 
   const inputRef = useRef<HTMLInputElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [fileError, setFileError] = useState<string>()
+  // mobile hides the FileChip, so the paperclip carries the attached state there
+  const mobile = useLayout() === 'mobile'
   const busy = phase === 'summoning' || phase === 'running'
   const empty = value.trim() === '' // Req 1.6
   const remaining = 500 - value.length
@@ -111,16 +115,9 @@ export function TaskInput({ value, phase, hasRun, file, onChange, onFileChange, 
             aria-describedby={fileError ? FILE_ERROR_ID : undefined}
           />
           {value.length > 400 && <span className={s.count} aria-live="polite">{remaining} left</span>}
-          {file
+          {file && !mobile
             ? <FileChip name={file.name} rows={file.rows} onRemove={remove} disabled={busy} />
-            : (
-              <button type="button" className={s.attach} onClick={() => fileRef.current?.click()} disabled={busy} aria-label="Attach a CSV file">
-                <svg viewBox="0 0 16 16" fill="none" width={16} height={16} aria-hidden="true">
-                  <path d="M10.5 5 6 9.5a1.4 1.4 0 0 0 2 2L13 6.5a2.8 2.8 0 0 0-4-4L4 7.5a4.2 4.2 0 0 0 6 6l3.5-3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-                </svg>
-                <span className={s.attachLabel}>CSV</span>
-              </button>
-            )}
+            : <AttachButton file={file} disabled={busy} onPick={() => fileRef.current?.click()} onRemove={remove} />}
         </label>
         <input ref={fileRef} type="file" accept=".csv,text/csv" hidden onChange={onPick} data-testid="csv-input" />
         <SummonButton state={btnState} disabled={empty || busy} onClick={onSubmit} />
