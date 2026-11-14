@@ -87,7 +87,7 @@ Phase A (tasks 1–9) is the end-to-end MVP: one live séance from task to agree
   - Match `design/mocks/landing.html`; route `/` and `/seance`; corrected footnote copy
   - _Requirements: 11.1, 11.2, 11.3, 11.4_
 
-- [ ] 15. Safety pass
+- [x] 15. Safety pass
   - Per-IP limit (10/min, in-memory, best effort), per-instance response cache by input hash, confirm no secret reaches the client bundle (`grep` the `dist/` output in a test)
   - _Requirements: 12.1, 12.2, 12.3, 12.4_
 

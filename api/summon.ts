@@ -20,25 +20,19 @@ import {
   buildSummonUserPrompt,
   buildSummonRepairPrompt,
 } from '../server/llm/prompts/summon.js'
+import { LruCache } from '../src/lib/lruCache.js'
+import { newEndpointLimiter, allowRequest, requestHash, CACHE_MAX_ENTRIES } from '../server/safety.js'
 
 /** Vercel: room for a 15 s retry-after wait plus two LLM calls (Hobby allows 60 s). */
 export const config = { maxDuration: 60 }
 
 // ---------------------------------------------------------------------------
-// In-memory response cache  (Req 12.4)
-// Key: SHA-256 hex of the JSON-serialised request body.
-// Lifetime: the function instance (warm lambda).
+// Per-IP limit (Req 12.3) and bounded in-memory response cache (Req 12.4)
+// Key: SHA-256 hex of the validated request. Lifetime: the function instance.
 // ---------------------------------------------------------------------------
 
-const responseCache = new Map<string, unknown>()
-
-async function cacheKey(body: unknown): Promise<string> {
-  const encoded = new TextEncoder().encode(JSON.stringify(body))
-  const hashBuffer = await crypto.subtle.digest('SHA-256', encoded)
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-}
+const limiter = newEndpointLimiter()
+const responseCache = new LruCache<SummonRes>(CACHE_MAX_ENTRIES)
 
 // ---------------------------------------------------------------------------
 // Handler
@@ -48,6 +42,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
+
+  // ── Per-IP limit: 429 + Retry-After above 10/min (Req 12.3) ───────────────
+  if (!allowRequest(limiter, req, res)) return
 
   // ── Defense-in-depth body-size limit (Req 3.7) ────────────────────────────
   const contentLength = req.headers['content-length']
@@ -64,10 +61,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const summonReq = parsed.data
 
   // ── Response cache (Req 12.4) ──────────────────────────────────────────────
-  const key = await cacheKey(summonReq)
-  if (responseCache.has(key)) {
-    return res.status(200).json(responseCache.get(key))
-  }
+  const key = requestHash(summonReq)
+  const cached = responseCache.get(key)
+  if (cached) return res.status(200).json(cached)
 
   // ── LLM config (keys from env only — Req 12.1) ────────────────────────────
   let llmConfig

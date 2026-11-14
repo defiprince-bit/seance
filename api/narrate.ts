@@ -23,23 +23,18 @@ import {
   buildSchemaRepairPrompt,
   buildImportRepairPrompt,
 } from '../server/llm/prompts/narrate.js'
+import { LruCache } from '../src/lib/lruCache.js'
+import { newEndpointLimiter, allowRequest, requestHash, CACHE_MAX_ENTRIES } from '../server/safety.js'
 
 /** Vercel: room for a 15 s retry-after wait plus two LLM calls (Hobby allows 60 s). */
 export const config = { maxDuration: 60 }
 
 // ---------------------------------------------------------------------------
-// In-memory response cache  (Req 12.4)
+// Per-IP limit (Req 12.3) and bounded in-memory response cache (Req 12.4)
 // ---------------------------------------------------------------------------
 
-const responseCache = new Map<string, unknown>()
-
-async function cacheKey(body: unknown): Promise<string> {
-  const encoded = new TextEncoder().encode(JSON.stringify(body))
-  const hashBuffer = await crypto.subtle.digest('SHA-256', encoded)
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-}
+const limiter = newEndpointLimiter()
+const responseCache = new LruCache<NarrateRes>(CACHE_MAX_ENTRIES)
 
 // ---------------------------------------------------------------------------
 // Handler
@@ -50,6 +45,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
+  // ── Per-IP limit: 429 + Retry-After above 10/min (Req 12.3) ───────────────
+  if (!allowRequest(limiter, req, res)) return
+
   // ── Schema validation ──────────────────────────────────────────────────────
   const parsed = NarrateReqSchema.safeParse(req.body)
   if (!parsed.success) {
@@ -59,10 +57,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const narrateReq = parsed.data
 
   // ── Response cache (Req 12.4) ──────────────────────────────────────────────
-  const key = await cacheKey(narrateReq)
-  if (responseCache.has(key)) {
-    return res.status(200).json(responseCache.get(key))
-  }
+  const key = requestHash(narrateReq)
+  const cached = responseCache.get(key)
+  if (cached) return res.status(200).json(cached)
 
   // ── LLM config (keys from env only) ───────────────────────────────────────
   let llmConfig

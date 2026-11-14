@@ -145,6 +145,14 @@ See schemas above. All numbers are 1-based line numbers. `Program.lines` never i
 *For any* string longer than the documented limits, the request schemas reject it.
 **Validates: Requirements 1.5, 1.7, 3.7, 12.2**
 
+**Property 8: Rate limit holds in every window**
+*For any* sequence of hit times for one key, the limiter allows at most `limit` hits inside any window of `windowMs`, and every rejected hit gets a Retry-After of at least 1 second.
+**Validates: Requirements 12.3**
+
+**Property 9: The response cache stays bounded**
+*For any* sequence of `set` and `get` calls, the LRU cache never holds more than `max` entries and always returns the value most recently set for a key it still holds.
+**Validates: Requirements 12.4**
+
 ## Error Handling
 | Case | Detected by | UI state |
 |---|---|---|

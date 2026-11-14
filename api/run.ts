@@ -12,9 +12,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { RunReqSchema } from '../src/lib/schemas.js'
 import { runCobol } from '../server/runners/onlinecompiler.js'
+import { newEndpointLimiter, allowRequest } from '../server/safety.js'
 
 /** Vercel: compile + run can take up to the runner's 30 s limit, plus a network retry. */
 export const config = { maxDuration: 60 }
+
+/** Per-IP limit for this instance (Req 12.3). Runs are not cached (Req 12.4 covers summon and narrate). */
+const limiter = newEndpointLimiter()
 
 // ---------------------------------------------------------------------------
 // Handler
@@ -24,6 +28,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
+
+  // ── Per-IP limit: 429 + Retry-After above 10/min (Req 12.3) ───────────────
+  if (!allowRequest(limiter, req, res)) return
 
   // ── Defense-in-depth: reject bodies > 70 KB (Req 3.7 / 12.2) ─────────────
   // Vercel parses JSON bodies automatically; raw size check via Content-Length.
