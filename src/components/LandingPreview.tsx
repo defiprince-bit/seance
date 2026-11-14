@@ -1,10 +1,24 @@
 /**
- * LandingPreview: a static picture of the workspace. The COBOL lines, the
- * Python line and the 5871.50 result come from the golden "Sales total"
- * séance (src/fixtures/golden/sales.json), so the picture shows real output.
+ * LandingPreview: a static picture of the workspace. The COBOL lines and the
+ * 5871.50 result match the golden "Sales total" séance; the ghost's quote,
+ * explanation and the mapped Python line are read from that fixture
+ * (src/fixtures/golden/sales.json) so the picture can't drift from it.
  */
+import { goldenFor } from '../services/golden.ts'
+import { intersects } from '../lib/ranges.ts'
 import { PlanchetteMark } from './PlanchetteMark.tsx'
 import s from './LandingPreview.module.css'
+
+/** The highlighted lines (the UNSTRING statement). */
+export const PREVIEW_RANGE: [number, number] = [21, 22]
+
+const SALES = goldenFor('sales')
+/** The ghost's step for the highlighted lines: exact range first, else the first overlapping one. */
+export const PREVIEW_STEP =
+  SALES?.narration.steps.find(st => st.range[0] === PREVIEW_RANGE[0] && st.range[1] === PREVIEW_RANGE[1]) ??
+  SALES?.narration.steps.find(st => intersects(st.range, PREVIEW_RANGE))
+/** The first Python line mapped to the highlighted lines. */
+export const PREVIEW_PY = SALES?.narration.python.find(l => l.maps !== null && intersects(l.maps, PREVIEW_RANGE))
 
 type Tok = string | { kw: string } | { lit: string }
 const LINES: { n: number; on?: boolean; toks: Tok[] }[] = [
@@ -43,14 +57,16 @@ export function LandingPreview() {
           ))}
         </div>
         <div className={s.ghost}>
-          <div className={s.who}><PlanchetteMark size={16} /> The ghost · lines 21–22</div>
-          <blockquote>“We had no split(). We had UNSTRING, and we liked it.”</blockquote>
-          <p>It cuts each line at the comma and pours the pieces into two named boxes: the region, then the amount as text.</p>
+          <div className={s.who}>
+            <PlanchetteMark size={16} /> The ghost · lines {PREVIEW_RANGE[0]}–{PREVIEW_RANGE[1]}
+          </div>
+          {PREVIEW_STEP?.quote && <blockquote data-preview="quote">“{PREVIEW_STEP.quote}”</blockquote>}
+          {PREVIEW_STEP && <p data-preview="text">{PREVIEW_STEP.text}</p>}
         </div>
       </div>
       <div className={s.py}>
         <span className={s.tag}>Python</span>
-        <span>parts = line.split(&apos;,&apos;)</span>
+        {PREVIEW_PY && <span data-preview="python">{PREVIEW_PY.text.trim()}</span>}
         <span className={s.match}>✓ Both print 5871.50</span>
       </div>
     </div>

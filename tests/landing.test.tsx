@@ -151,3 +151,18 @@ describe('hero motion (reduced motion)', () => {
     for (const r of rules) expect(r).toMatch(/\[data-anim\]/)
   })
 })
+
+describe('Inside a séance preview', () => {
+  it('shows the real ghost step and Python line from the sales golden fixture', () => {
+    const sales = JSON.parse(readFileSync('src/fixtures/golden/sales.json', 'utf8')) as {
+      narration: { steps: { range: [number, number]; quote?: string; text: string }[]; python: { text: string; maps: [number, number] | null }[] }
+    }
+    const step = sales.narration.steps.find(st => st.range[0] === 21 && st.range[1] === 22)!
+    expect(step.quote).toBe('We split the line into region and amount.')
+    visit('/')
+    expect(host.querySelector('[data-preview="quote"]')?.textContent).toBe(`“${step.quote}”`)
+    expect(host.querySelector('[data-preview="text"]')?.textContent).toBe(step.text)
+    expect(host.querySelector('[data-preview="python"]')?.textContent).toBe("parts = line.split(',')")
+    expect(host.textContent).not.toContain('We had no split()')
+  })
+})
