@@ -35,7 +35,11 @@ describe('captureDecision (skip existing unless --force)', () => {
     expect(captureDecision(captured, true)).toBe('capture')
   })
   it('a hand-made placeholder is always replaced', () => {
-    expect(captureDecision(known, false)).toBe('replace-hand-made')
+    // built inline: the shipped fixtures are real captures now
+    const handMade = { ...known, provenance: 'hand-made', source: 'inline test placeholder' }
+    expect(GoldenSeanceSchema.safeParse(handMade).success).toBe(true)
+    expect(captureDecision(handMade, false)).toBe('replace-hand-made')
+    expect(captureDecision(handMade, true)).toBe('replace-hand-made')
   })
 })
 
