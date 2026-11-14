@@ -1,0 +1,275 @@
+{
+  "version": 1,
+  "slug": "payroll",
+  "label": "Payroll with overtime",
+  "task": "Work out gross pay for each employee in the attached CSV. Hours over 40 are paid at 1.5 times the hourly rate. Print each name with their pay, then TOTAL PAYROLL.",
+  "csv": {
+    "name": "payroll.csv",
+    "text": "name,hours,rate\nAda,38,25.00\nGrace,45,30.00\nAlan,50,22.50\n"
+  },
+  "provenance": "captured",
+  "capturedAt": "2026-11-14T11:57:07.184Z",
+  "source": "https://seance-psi.vercel.app",
+  "program": {
+    "language": "cobol",
+    "dialect": "cobol85-fixed",
+    "filename": "payroll-calculator.cob",
+    "title": "Gross Pay Calculator",
+    "lines": [
+      "       IDENTIFICATION DIVISION.",
+      "       PROGRAM-ID. payroll-calculator.",
+      "       ENVIRONMENT DIVISION.",
+      "       DATA DIVISION.",
+      "       WORKING-STORAGE SECTION.",
+      "      * Working storage variables",
+      "       01  WS-COUNT               PIC 9(4) VALUE ZERO.",
+      "       01  WS-INDEX               PIC 9(4) VALUE ZERO.",
+      "       01  WS-LINE                PIC X(200).",
+      "       01  WS-NAME                PIC X(30).",
+      "       01  WS-HOURS-STR           PIC X(20).",
+      "       01  WS-RATE-STR            PIC X(20).",
+      "       01  WS-HOURS               PIC 9(4)V99 VALUE ZERO.",
+      "       01  WS-RATE                PIC 9(5)V99 VALUE ZERO.",
+      "       01  WS-PAY                 PIC S9(7)V99 VALUE ZERO.",
+      "       01  WS-OT-HOURS            PIC 9(4)V99 VALUE ZERO.",
+      "       01  WS-OT-PAY              PIC S9(7)V99 VALUE ZERO.",
+      "       01  WS-TOTAL-PAYROLL       PIC S9(9)V99 VALUE ZERO.",
+      "       01  WS-PAY-OUT             PIC Z(7)9.99.",
+      "       01  WS-TOTAL-OUT           PIC Z(9)9.99.",
+      "       PROCEDURE DIVISION.",
+      "      * Main processing",
+      "           ACCEPT WS-COUNT",
+      "           PERFORM VARYING WS-INDEX FROM 1 BY 1",
+      "           UNTIL WS-INDEX > WS-COUNT",
+      "               ACCEPT WS-LINE",
+      "               UNSTRING WS-LINE DELIMITED BY \",\" INTO",
+      "                   WS-NAME,",
+      "                   WS-HOURS-STR,",
+      "                   WS-RATE-STR",
+      "               END-UNSTRING",
+      "               COMPUTE WS-HOURS = FUNCTION NUMVAL(WS-HOURS-STR)",
+      "               COMPUTE WS-RATE  = FUNCTION NUMVAL(WS-RATE-STR)",
+      "               IF WS-HOURS > 40",
+      "                   COMPUTE WS-OT-HOURS = WS-HOURS - 40",
+      "                   COMPUTE WS-OT-PAY = WS-OT-HOURS * WS-RATE * 1.5",
+      "                   COMPUTE WS-PAY = 40 * WS-RATE + WS-OT-PAY",
+      "               ELSE",
+      "                   COMPUTE WS-PAY = WS-HOURS * WS-RATE",
+      "               END-IF",
+      "               ADD WS-PAY TO WS-TOTAL-PAYROLL",
+      "               MOVE WS-PAY TO WS-PAY-OUT",
+      "               DISPLAY WS-NAME \": \" WS-PAY-OUT",
+      "           END-PERFORM",
+      "           MOVE WS-TOTAL-PAYROLL TO WS-TOTAL-OUT",
+      "           DISPLAY \"TOTAL PAYROLL: \" WS-TOTAL-OUT",
+      "           STOP RUN."
+    ]
+  },
+  "cobolRun": {
+    "stdout": "Ada                           :      950.00\nGrace                         :     1425.00\nAlan                          :     1237.50\nTOTAL PAYROLL:       3612.50\n",
+    "exitCode": 0,
+    "runner": "onlinecompiler"
+  },
+  "narration": {
+    "steps": [
+      {
+        "range": [
+          4,
+          20
+        ],
+        "quote": "Back in the day, we set up the memory.",
+        "text": "DATA DIVISION: declare working storage; Python: define variables and Decimal context."
+      },
+      {
+        "range": [
+          21,
+          22
+        ],
+        "quote": "Now we start the routine.",
+        "text": "PROCEDURE DIVISION: begin logic; Python: start main function."
+      },
+      {
+        "range": [
+          23,
+          25
+        ],
+        "quote": "We read how many rows.",
+        "text": "ACCEPT WS-COUNT: read count; Python: n = int(sys.stdin.readline()); PERFORM VARYING: loop over rows."
+      },
+      {
+        "range": [
+          26,
+          33
+        ],
+        "quote": "Pull the line and split.",
+        "text": "ACCEPT WS-LINE: read CSV line; UNSTRING: split by comma; COMPUTE WS-HOURS/WS-RATE: parse to Decimal."
+      },
+      {
+        "range": [
+          34,
+          39
+        ],
+        "quote": "Overtime logic.",
+        "text": "IF WS-HOURS > 40: compute OT-HOURS, OT-PAY, PAY; ELSE: compute PAY; Python: same with Decimal arithmetic."
+      },
+      {
+        "range": [
+          40,
+          43
+        ],
+        "quote": "Add to total and show.",
+        "text": "ADD WS-PAY TO WS-TOTAL-PAYROLL; MOVE WS-PAY TO WS-PAY-OUT; DISPLAY name and pay; Python: update total, format, print."
+      },
+      {
+        "range": [
+          44,
+          44
+        ],
+        "quote": "Loop ends.",
+        "text": "END-PERFORM: finish loop; Python: loop ends automatically."
+      },
+      {
+        "range": [
+          45,
+          46
+        ],
+        "quote": "Show the grand total.",
+        "text": "MOVE WS-TOTAL-PAYROLL TO WS-TOTAL-OUT; DISPLAY total; Python: format and print total."
+      },
+      {
+        "range": [
+          47,
+          47
+        ],
+        "quote": "End of program.",
+        "text": "STOP RUN: terminate; Python: program ends."
+      }
+    ],
+    "python": [
+      {
+        "text": "import sys",
+        "maps": null
+      },
+      {
+        "text": "from decimal import Decimal, getcontext, ROUND_DOWN",
+        "maps": null
+      },
+      {
+        "text": "getcontext().prec = 50",
+        "maps": null
+      },
+      {
+        "text": "def quantize(x):",
+        "maps": null
+      },
+      {
+        "text": "    return x.quantize(Decimal(\"0.01\"), rounding=ROUND_DOWN)",
+        "maps": null
+      },
+      {
+        "text": "n = int(sys.stdin.readline())",
+        "maps": [
+          23,
+          23
+        ]
+      },
+      {
+        "text": "total_payroll = Decimal(\"0.00\")",
+        "maps": [
+          18,
+          18
+        ]
+      },
+      {
+        "text": "for _ in range(n):",
+        "maps": [
+          24,
+          25
+        ]
+      },
+      {
+        "text": "    line = sys.stdin.readline().rstrip(\"\\n\")",
+        "maps": [
+          26,
+          26
+        ]
+      },
+      {
+        "text": "    name, hours_str, rate_str = line.split(\",\")",
+        "maps": [
+          27,
+          31
+        ]
+      },
+      {
+        "text": "    hours = quantize(Decimal(hours_str.strip()))",
+        "maps": [
+          32,
+          32
+        ]
+      },
+      {
+        "text": "    rate = quantize(Decimal(rate_str.strip()))",
+        "maps": [
+          33,
+          33
+        ]
+      },
+      {
+        "text": "    if hours > Decimal(\"40\"):\n        ot_hours = quantize(hours - Decimal(\"40\"))\n        ot_pay = quantize(ot_hours * rate * Decimal(\"1.5\"))\n        pay = quantize(Decimal(\"40\") * rate + ot_pay)",
+        "maps": [
+          34,
+          37
+        ]
+      },
+      {
+        "text": "    else:\n        pay = quantize(hours * rate)",
+        "maps": [
+          38,
+          39
+        ]
+      },
+      {
+        "text": "    total_payroll = quantize(total_payroll + pay)",
+        "maps": [
+          41,
+          41
+        ]
+      },
+      {
+        "text": "    pay_out = f\"{pay:>10.2f}\"",
+        "maps": [
+          42,
+          42
+        ]
+      },
+      {
+        "text": "    print(f\"{name}: {pay_out}\")",
+        "maps": [
+          43,
+          43
+        ]
+      },
+      {
+        "text": "total_out = f\"{total_payroll:>12.2f}\"",
+        "maps": [
+          45,
+          45
+        ]
+      },
+      {
+        "text": "print(f\"TOTAL PAYROLL: {total_out}\")",
+        "maps": [
+          46,
+          46
+        ]
+      }
+    ],
+    "note": "COBOL keeps exact fixed-point decimals and Python mirrors them with Decimal, truncating like COBOL."
+  },
+  "pythonRun": {
+    "stdout": "Ada:     950.00\nGrace:    1425.00\nAlan:    1237.50\nTOTAL PAYROLL:      3612.50",
+    "exitCode": 0,
+    "runner": "pyodide"
+  }
+}

@@ -7,98 +7,115 @@
     "name": "sales.csv",
     "text": "region,amount\nNorth,1520.25\nSouth,980.00\nEast,2105.75\nWest,1265.50\n"
   },
-  "provenance": "hand-made",
-  "capturedAt": "2026-11-09",
-  "source": "Hand-made offline placeholder (no compiler or LLM call). The COBOL output is the expected output, worked out by hand; the Python output is from a real Pyodide run. npm run golden:capture replaces this file with a real capture (Req 8.1).",
+  "provenance": "captured",
+  "capturedAt": "2026-11-14T11:46:22.122Z",
+  "source": "https://seance-psi.vercel.app",
   "program": {
     "language": "cobol",
     "dialect": "cobol85-fixed",
     "filename": "total-sales.cob",
-    "title": "Total sales",
+    "title": "Total Sales Calculator",
     "lines": [
       "       IDENTIFICATION DIVISION.",
       "       PROGRAM-ID. TOTAL-SALES.",
       "       ENVIRONMENT DIVISION.",
+      "       INPUT-OUTPUT SECTION.",
       "       DATA DIVISION.",
       "       WORKING-STORAGE SECTION.",
-      "       01  WS-COUNT        PIC 9(4) VALUE ZERO.",
-      "       01  WS-I            PIC 9(4) VALUE ZERO.",
-      "       01  WS-LINE         PIC X(200).",
-      "       01  WS-REGION       PIC X(50).",
-      "       01  WS-AMOUNT-TXT   PIC X(20).",
-      "       01  WS-AMOUNT       PIC S9(7)V99 VALUE ZERO.",
-      "       01  WS-TOTAL        PIC S9(7)V99 VALUE ZERO.",
-      "       01  WS-TOTAL-OUT    PIC Z(6)9.99.",
+      "       01 WS-COUNT PIC 9(4) VALUE ZERO.",
+      "       01 WS-I PIC 9(4) VALUE ZERO.",
+      "       01 WS-LINE PIC X(200).",
+      "       01 WS-REGION PIC X(50).",
+      "       01 WS-AMOUNT-TXT PIC X(20).",
+      "       01 WS-AMOUNT PIC S9(7)V99 VALUE ZERO.",
+      "       01 WS-TOTAL PIC S9(9)V99 VALUE ZERO.",
+      "       01 WS-TOTAL-OUT PIC Z(9)9.99.",
       "       PROCEDURE DIVISION.",
-      "      * Read the row count, then add up every sale",
-      "       MAIN-PARA.",
+      "      * Main processing paragraph",
+      "       MAIN-LOGIC.",
       "           ACCEPT WS-COUNT",
-      "           PERFORM VARYING WS-I FROM 1 BY 1",
-      "               UNTIL WS-I > WS-COUNT",
+      "           PERFORM VARYING WS-I FROM 1 BY 1 UNTIL WS-I > WS-COUNT",
       "               ACCEPT WS-LINE",
-      "               UNSTRING WS-LINE DELIMITED BY \",\"",
-      "                   INTO WS-REGION WS-AMOUNT-TXT",
-      "               END-UNSTRING",
-      "               COMPUTE WS-AMOUNT = FUNCTION NUMVAL(WS-AMOUNT-TXT)",
+      "               UNSTRING WS-LINE DELIMITED BY ',' INTO WS-REGION",
+      "               WS-AMOUNT-TXT",
+      "               MOVE FUNCTION NUMVAL(WS-AMOUNT-TXT) TO WS-AMOUNT",
       "               ADD WS-AMOUNT TO WS-TOTAL",
-      "           END-PERFORM",
-      "      * Dress the total up for printing",
+      "           END-PERFORM.",
       "           MOVE WS-TOTAL TO WS-TOTAL-OUT",
-      "           DISPLAY \"TOTAL SALES: \" WS-TOTAL-OUT",
+      "           DISPLAY \"TOTAL SALES: \" WS-TOTAL-OUT.",
       "           STOP RUN."
     ]
   },
   "cobolRun": {
-    "stdout": "TOTAL SALES:    5871.50\n",
+    "stdout": "TOTAL SALES:       5871.50\n",
     "exitCode": 0,
-    "runner": "fixtures"
+    "runner": "onlinecompiler"
   },
   "narration": {
     "steps": [
       {
         "range": [
-          1,
-          3
+          5,
+          6
         ],
-        "quote": "Every program introduced itself first.",
-        "text": "The IDENTIFICATION DIVISION names the program TOTAL-SALES. The ENVIRONMENT DIVISION stays empty: the data arrives on stdin, like a Python script reading sys.stdin."
+        "quote": "Back in the day, we’d set up our tables like this.",
+        "text": "DATA DIVISION and WORKING-STORAGE define variables; Python uses imports and variable declarations."
       },
       {
         "range": [
-          4,
-          13
+          7,
+          14
         ],
-        "quote": "Before any work, you declare every box and its exact size.",
-        "text": "WORKING-STORAGE declares each variable with a PIC clause. PIC S9(7)V99 is seven digits and two decimals, kept exact; Python mirrors it with Decimal. Z(6)9.99 is the printed form."
+        "quote": "We set up the working storage.",
+        "text": "Define WS-COUNT, WS-I, WS-LINE, WS-REGION, WS-AMOUNT-TXT, WS-AMOUNT, WS-TOTAL, WS-TOTAL-OUT; Python declares variables and Decimal context."
       },
       {
         "range": [
-          14,
-          17
+          15,
+          16
         ],
-        "text": "The PROCEDURE DIVISION holds the code. ACCEPT WS-COUNT reads the first stdin line, the number of rows, like int(sys.stdin.readline()) in Python."
+        "quote": "We start the logic with a PROCEDURE DIVISION.",
+        "text": "PROCEDURE DIVISION and comment; Python begins main block."
       },
       {
         "range": [
-          18,
-          23
+          17,
+          18
         ],
-        "quote": "We had no split(). We had UNSTRING, and we liked it.",
-        "text": "PERFORM VARYING loops once per row, like a Python for loop. ACCEPT reads the row and UNSTRING cuts it at the comma into region and amount, like str.split(',')."
+        "quote": "First, we grab the count.",
+        "text": "MAIN-LOGIC and ACCEPT WS-COUNT; Python reads n from stdin."
       },
       {
         "range": [
-          24,
-          26
+          19,
+          20
         ],
-        "text": "FUNCTION NUMVAL turns the amount text into a number, like Decimal(text). ADD puts it on the running total, like total += amount. END-PERFORM closes the loop."
+        "quote": "Loop over each record.",
+        "text": "PERFORM VARYING and ACCEPT WS-LINE; Python loops n times reading lines."
       },
       {
         "range": [
-          27,
-          30
+          21,
+          22
         ],
-        "text": "MOVE copies the total into the edited picture, which adds the decimal point and leading spaces. DISPLAY prints it, like print(), and STOP RUN ends the program."
+        "quote": "We split the line into region and amount.",
+        "text": "UNSTRING WS-LINE into WS-REGION and WS-AMOUNT-TXT; Python splits line by comma."
+      },
+      {
+        "range": [
+          23,
+          24
+        ],
+        "quote": "Convert text to number and add to total.",
+        "text": "MOVE FUNCTION NUMVAL to WS-AMOUNT and ADD to WS-TOTAL; Python converts string to Decimal and adds with rounding."
+      },
+      {
+        "range": [
+          25,
+          28
+        ],
+        "quote": "Finally, we display the total.",
+        "text": "END-PERFORM, MOVE to WS-TOTAL-OUT, DISPLAY, STOP RUN; Python prints formatted total."
       }
     ],
     "python": [
@@ -115,70 +132,74 @@
         "maps": null
       },
       {
-        "text": "CENTS = Decimal(\"0.01\")",
+        "text": "n = int(sys.stdin.readline())",
         "maps": [
-          11,
-          12
+          18,
+          18
         ]
       },
       {
         "text": "total = Decimal(\"0.00\")",
-        "maps": [
-          12,
-          12
-        ]
-      },
-      {
-        "text": "n = int(sys.stdin.readline())",
-        "maps": [
-          17,
-          17
-        ]
+        "maps": null
       },
       {
         "text": "for _ in range(n):",
         "maps": [
-          18,
+          19,
           19
         ]
       },
       {
-        "text": "    row = sys.stdin.readline().rstrip(\"\\n\")",
+        "text": "    line = sys.stdin.readline().rstrip(\"\\n\")",
         "maps": [
           20,
           20
         ]
       },
       {
-        "text": "    region, amount_txt = row.split(\",\", 1)",
+        "text": "    parts = line.split(',')",
         "maps": [
           21,
+          21
+        ]
+      },
+      {
+        "text": "    region = parts[0]",
+        "maps": [
+          21,
+          21
+        ]
+      },
+      {
+        "text": "    amount_str = parts[1].strip()",
+        "maps": [
+          21,
+          21
+        ]
+      },
+      {
+        "text": "    amount = Decimal(amount_str).quantize(Decimal(\"0.01\"), rounding=ROUND_DOWN)",
+        "maps": [
+          23,
           23
         ]
       },
       {
-        "text": "    amount = Decimal(amount_txt.strip()).quantize(CENTS, rounding=ROUND_DOWN)",
+        "text": "    total = (total + amount).quantize(Decimal(\"0.01\"), rounding=ROUND_DOWN)",
         "maps": [
           24,
           24
         ]
       },
       {
-        "text": "    total = (total + amount).quantize(CENTS, rounding=ROUND_DOWN)",
+        "text": "print(f\"TOTAL SALES: {total:.2f}\")",
         "maps": [
-          25,
-          25
-        ]
-      },
-      {
-        "text": "print(f\"TOTAL SALES: {total}\")",
-        "maps": [
-          28,
-          29
+          27,
+          27
         ]
       }
     ],
-    "note": "COBOL keeps money as exact fixed-point decimals (PIC S9(7)V99); Python mirrors them with Decimal, truncating to cents like COBOL."
+    "note": "COBOL keeps exact fixed-point decimals and Python mirrors them with Decimal, truncating like COBOL."
   },
   "pythonRun": {
     "stdout": "TOTAL SALES: 5871.50",

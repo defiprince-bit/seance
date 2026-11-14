@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "slug": "compound-interest",
+  "label": "Compound interest for 10 years",
+  "task": "Compound interest on 1000.00 at 5 percent a year for 10 years, compounded yearly. Print the result as FINAL AMOUNT.",
+  "provenance": "captured",
+  "capturedAt": "2026-11-14T11:50:08.703Z",
+  "source": "https://seance-psi.vercel.app",
+  "program": {
+    "language": "cobol",
+    "dialect": "cobol85-fixed",
+    "filename": "compound-interest.cob",
+    "title": "Compound interest calculation",
+    "lines": [
+      "      * Compound interest calculation",
+      "       IDENTIFICATION DIVISION.",
+      "       PROGRAM-ID. COMPOUND-INTEREST.",
+      "       ENVIRONMENT DIVISION.",
+      "       DATA DIVISION.",
+      "       WORKING-STORAGE SECTION.",
+      "       01  WS-PRINCIPAL      PIC S9(7)V99 VALUE 1000.00.",
+      "       01  WS-FACTOR         PIC S9(3)V99 VALUE 1.05.",
+      "       01  WS-YEARS          PIC 9(2)    VALUE 10.",
+      "       01  WS-INTEREST       PIC S9(7)V99 VALUE ZERO.",
+      "       01  WS-OUT            PIC Z(9)9.99.",
+      "       PROCEDURE DIVISION.",
+      "      * Main processing",
+      "       MAIN-LOGIC.",
+      "           MOVE WS-PRINCIPAL TO WS-INTEREST",
+      "           PERFORM WS-YEARS TIMES",
+      "               COMPUTE WS-INTEREST = WS-INTEREST * WS-FACTOR",
+      "           END-PERFORM",
+      "           MOVE WS-INTEREST TO WS-OUT",
+      "           DISPLAY \"FINAL AMOUNT: \" WS-OUT",
+      "           STOP RUN."
+    ]
+  },
+  "cobolRun": {
+    "stdout": "FINAL AMOUNT:       1628.86\n",
+    "exitCode": 0,
+    "runner": "onlinecompiler"
+  },
+  "narration": {
+    "steps": [
+      {
+        "range": [
+          5,
+          11
+        ],
+        "quote": "Back in the day, we stored numbers in fixed-point, no floating surprises.",
+        "text": "DATA DIVISION: DECLARE WS-PRINCIPAL, WS-FACTOR, WS-YEARS, WS-INTEREST, WS-OUT. Python: define Decimal constants and variables."
+      },
+      {
+        "range": [
+          12,
+          15
+        ],
+        "quote": "I always started with a MOVE to set the stage.",
+        "text": "PROCEDURE DIVISION: MOVE WS-PRINCIPAL to WS-INTEREST. Python: interest = principal."
+      },
+      {
+        "range": [
+          16,
+          18
+        ],
+        "quote": "The PERFORM loop was my favorite, like a drumbeat.",
+        "text": "PERFORM loop multiplies each year. Python: for loop with quantized multiplication."
+      },
+      {
+        "range": [
+          19,
+          21
+        ],
+        "quote": "Finally, we DISPLAY the result and call it a day.",
+        "text": "Display final amount. Python: print formatted interest."
+      }
+    ],
+    "python": [
+      {
+        "text": "import sys",
+        "maps": null
+      },
+      {
+        "text": "from decimal import Decimal, getcontext, ROUND_DOWN",
+        "maps": null
+      },
+      {
+        "text": "getcontext().prec = 50",
+        "maps": null
+      },
+      {
+        "text": "principal = Decimal(\"1000.00\")",
+        "maps": [
+          7,
+          7
+        ]
+      },
+      {
+        "text": "factor = Decimal(\"1.05\")",
+        "maps": [
+          8,
+          8
+        ]
+      },
+      {
+        "text": "years = 10",
+        "maps": [
+          9,
+          9
+        ]
+      },
+      {
+        "text": "interest = principal",
+        "maps": [
+          15,
+          15
+        ]
+      },
+      {
+        "text": "for _ in range(years):",
+        "maps": [
+          16,
+          18
+        ]
+      },
+      {
+        "text": "    interest = (interest * factor).quantize(Decimal(\"0.01\"), rounding=ROUND_DOWN)",
+        "maps": [
+          16,
+          18
+        ]
+      },
+      {
+        "text": "print(f\"FINAL AMOUNT: {interest}\")",
+        "maps": [
+          20,
+          20
+        ]
+      }
+    ],
+    "note": "COBOL keeps exact fixed-point decimals and Python mirrors them with Decimal, truncating like COBOL."
+  },
+  "pythonRun": {
+    "stdout": "FINAL AMOUNT: 1628.86",
+    "exitCode": 0,
+    "runner": "pyodide"
+  }
+}
