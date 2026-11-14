@@ -1,0 +1,14 @@
+.seg {
+  display: inline-flex; border: 1px solid var(--seam);
+  border-radius: var(--r-sm); padding: 2px; gap: 2px; background: var(--void);
+}
+.seg button {
+  height: 24px; padding: 0 9px; border-radius: 6px;
+  border: 0; background: none; color: var(--dust);
+  font: 400 var(--text-xs)/1 var(--font-body); cursor: pointer;
+  transition: background var(--d-fast) var(--ease-out), color var(--d-fast) var(--ease-out);
+}
+.seg button:hover { color: var(--ash); }
+.seg button[aria-selected="true"] { background: var(--altar); color: var(--bone); }
+.full { display: flex; width: 100%; }
+.full button { flex: 1; height: 32px; font-size: var(--text-sm); }

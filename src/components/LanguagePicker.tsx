@@ -4,7 +4,8 @@
  * inside; arrow keys move the selection with a roving tabindex, skipping
  * resting spirits; Esc, Cancel, the close button and the scrim all cancel.
  * Every keydown stops here, so the workspace shortcuts (Esc abort, j/k, /)
- * never fire behind the dialog. Desktop dialog only; the bottom sheet is task 13.
+ * never fire behind the dialog. Under 768px it is a bottom sheet (variant 'sheet')
+ * with the same semantics; unselected cards there use the compact layout.
  */
 import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
@@ -19,12 +20,15 @@ interface LanguagePickerProps {
   spirits?: readonly Spirit[]
   onConfirm: (id: string) => void
   onCancel: () => void
+  /** 'sheet' = mobile bottom sheet; same dialog semantics and keyboard */
+  variant?: 'dialog' | 'sheet'
 }
 
 const STEP: Record<string, 1 | -1> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }
 const TABBABLE = 'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
-export function LanguagePicker({ value, spirits = SPIRITS, onConfirm, onCancel }: LanguagePickerProps) {
+export function LanguagePicker({ value, spirits = SPIRITS, onConfirm, onCancel, variant = 'dialog' }: LanguagePickerProps) {
+  const sheet = variant === 'sheet'
   const [selected, setSelected] = useState(() => initialIndex(spirits, value))
   const dialogRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<(HTMLButtonElement | null)[]>([])
@@ -68,12 +72,14 @@ export function LanguagePicker({ value, spirits = SPIRITS, onConfirm, onCancel }
       <div className={s.scrim} onClick={onCancel} aria-hidden="true" />
       <div
         ref={dialogRef}
-        className={s.dialog}
+        className={`${s.dialog} ${sheet ? s.sheet : ''}`}
+        data-variant={variant}
         role="dialog"
         aria-modal="true"
         aria-labelledby="spirit-picker-title"
         onKeyDown={onKeyDown}
       >
+        {sheet && <div className={s.handle} aria-hidden="true" />}
         <div className={s.dh}>
           <div>
             <span className={s.eyebrow}>Choose a spirit</span>
@@ -94,6 +100,7 @@ export function LanguagePicker({ value, spirits = SPIRITS, onConfirm, onCancel }
               spirit={spirit}
               selected={i === selected}
               tabIndex={i === selected ? 0 : -1}
+              compact={sheet && i !== selected}
               onSelect={() => select(i, false)}
               cardRef={el => { cardRefs.current[i] = el }}
             />

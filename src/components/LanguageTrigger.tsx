@@ -8,6 +8,7 @@ import { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { SPIRITS } from '../lib/spirits.ts'
 import { LanguagePicker } from './LanguagePicker.tsx'
+import { useLayout } from '../state/useMedia.ts'
 import s from './LanguageTrigger.module.css'
 
 interface LanguageTriggerProps {
@@ -20,6 +21,7 @@ interface LanguageTriggerProps {
 export function LanguageTrigger({ value = 'cobol', onConfirm }: LanguageTriggerProps) {
   const [open, setOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const sheet = useLayout() === 'mobile' // bottom sheet under 768px (Req 10.1)
   const current = SPIRITS.find(sp => sp.id === value) ?? SPIRITS[0]
 
   const close = () => {
@@ -46,6 +48,7 @@ export function LanguageTrigger({ value = 'cobol', onConfirm }: LanguageTriggerP
       {open && createPortal(
         <LanguagePicker
           value={current.id}
+          variant={sheet ? 'sheet' : 'dialog'}
           onCancel={close}
           onConfirm={id => { close(); onConfirm(id) }}
         />,

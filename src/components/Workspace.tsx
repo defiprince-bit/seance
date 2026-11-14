@@ -27,6 +27,10 @@ import { RunOutput } from './RunOutput.tsx'
 import { EmptyState } from './EmptyState.tsx'
 import { SummoningSkeleton } from './SummoningSkeleton.tsx'
 import { ErrorState } from './ErrorState.tsx'
+import { GhostCaption } from './GhostCaption.tsx'
+import { useLayout } from '../state/useMedia.ts'
+import { effectiveTab, tabForFailure } from '../lib/layout.ts'
+import type { PaneTab } from '../lib/layout.ts'
 
 const PLAY_STEP_MS = 5000
 
@@ -36,6 +40,15 @@ export function Workspace() {
   // the CSV attached in the task bar: only typed summons use it (chips bring their own)
   const [attached, setAttached] = useState<CsvData>()
   const { error, program } = state
+  const layout = useLayout()
+  const [chosenTab, setChosenTab] = useState<PaneTab>()
+  // a new failure opens the tab that explains it (adjust state on change, no effect)
+  const [seenError, setSeenError] = useState(error)
+  if (error !== seenError) {
+    setSeenError(error)
+    if (error) setChosenTab(tabForFailure(error.step))
+  }
+  const tab = effectiveTab(layout, chosenTab)
 
   const activeRange = activeRangeOf(state.steps, state.activeIndex)
   const playing = playRequested && state.activeIndex < state.steps.length - 1
@@ -99,8 +112,11 @@ export function Workspace() {
     start(buildFixTask(state.task, failure), state.csv ?? null)
   }, [error, lines, start, state.task, state.csv])
 
+  const activeStep = state.steps[state.activeIndex]
+  const showCaption = layout === 'mobile' && tab === 'code' && activeStep !== undefined && !error
+
   const codeColumn = program
-    ? <CodePane key={state.runId} lines={lines} activeRange={activeRange} streaming filename={program.filename} errorAt={compile} cached={state.cached} />
+    ? <CodePane key={state.runId} lines={lines} activeRange={activeRange} streaming filename={program.filename} errorAt={compile} cached={state.cached} reserveBottom={showCaption} />
     : state.phase === 'summoning' ? <SummoningSkeleton /> : <EmptyState onPick={pick} />
 
   const ghostColumn = error && error.step !== 'python'
@@ -142,9 +158,8 @@ export function Workspace() {
       }
       code={codeColumn}
       ghost={ghostColumn}
-      python={
-        <>
-          <TranslationPane lines={state.python} activeRange={activeRange} note={state.note} />
+      translation={<TranslationPane lines={state.python} activeRange={activeRange} note={state.note} />}
+      output={
           <RunOutput
             cobolRun={state.cobolRun}
             pythonRun={state.pythonRun}
@@ -155,8 +170,19 @@ export function Workspace() {
             onFix={fix}
             onEdit={edit}
           />
-        </>
       }
+      layout={layout}
+      tab={tab}
+      onTab={setChosenTab}
+      caption={showCaption && (
+        <GhostCaption
+          step={activeStep}
+          index={state.activeIndex}
+          count={state.steps.length}
+          onPrev={() => dispatch({ type: 'STEP_PREV' })}
+          onNext={() => dispatch({ type: 'STEP_NEXT' })}
+        />
+      )}
     />
   )
 }

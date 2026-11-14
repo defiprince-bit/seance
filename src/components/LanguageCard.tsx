@@ -14,6 +14,8 @@ interface LanguageCardProps {
   tabIndex: 0 | -1
   onSelect: () => void
   cardRef: Ref<HTMLButtonElement>
+  /** bottom sheet, unselected: name, year, epithet and a one-line blurb only */
+  compact?: boolean
 }
 
 const Check = () => (
@@ -22,8 +24,9 @@ const Check = () => (
   </svg>
 )
 
-export function LanguageCard({ spirit, selected, tabIndex, onSelect, cardRef }: LanguageCardProps) {
+export function LanguageCard({ spirit, selected, tabIndex, onSelect, cardRef, compact = false }: LanguageCardProps) {
   const resting = !spirit.enabled
+  const full = !resting && !compact
   const name = `${spirit.name}, born ${spirit.born}, ${spirit.epithet}${resting ? ', resting' : ''}`
 
   return (
@@ -35,7 +38,8 @@ export function LanguageCard({ spirit, selected, tabIndex, onSelect, cardRef }: 
       aria-disabled={resting || undefined}
       aria-label={name}
       tabIndex={resting ? -1 : tabIndex}
-      className={`${s.card} ${resting ? s.rest : ''}`}
+      className={`${s.card} ${resting ? s.rest : ''} ${compact ? s.compact : ''}`}
+      data-compact={compact || undefined}
       onClick={resting ? undefined : onSelect}
     >
       <span className={s.top}>
@@ -47,14 +51,14 @@ export function LanguageCard({ spirit, selected, tabIndex, onSelect, cardRef }: 
         {selected && <span className={s.sel}><Check />Selected</span>}
         {resting && <span className={s.resting}>Resting</span>}
       </span>
-      <span className={s.desc}>{spirit.blurb}</span>
-      {!resting && spirit.snippet && <span className={`${s.snippet} crt`}>{spirit.snippet}</span>}
-      {!resting && (
+      <span className={`${s.desc} ${compact ? s.clamp : ''}`}>{spirit.blurb}</span>
+      {full && spirit.snippet && <span className={`${s.snippet} crt`} data-snippet>{spirit.snippet}</span>}
+      {full && (
         <span className={s.traits}>
           {spirit.traits.map(t => <span key={t}>{t}</span>)}
         </span>
       )}
-      {!resting && spirit.dialect && (
+      {full && spirit.dialect && (
         <span className={s.dialect}>
           <span className={s.dialectLabel}>Dialect</span>
           <span className={s.select}>{spirit.dialect}</span>

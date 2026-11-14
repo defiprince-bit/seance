@@ -35,6 +35,8 @@
   text-decoration: underline wavy rgba(238,142,126,.6); text-underline-offset: 3px;
   text-shadow: none;
 }
+/* room for the docked GhostCaption on mobile */
+.reserve { padding-bottom: 170px; }
 .streaming { animation: lineIn var(--d-slow) var(--ease-out) both; }
 .planchette {
   position: absolute; left: 40px; top: 0; width: 14px; height: 19px;

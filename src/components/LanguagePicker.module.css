@@ -69,6 +69,9 @@
   border-radius: var(--r-sm); border: 1px solid var(--seam); background: var(--altar);
   font-size: var(--text-sm); color: var(--bone);
 }
+/* the selected card's glow would otherwise replace the global focus ring */
+.card:focus-visible { box-shadow: var(--ring); }
+.card[aria-checked="true"]:focus-visible { box-shadow: var(--ring), var(--glow-candle); }
 /* resting spirits: dashed, quiet, not interactive */
 .card.rest { cursor: default; border-style: dashed; background: transparent; }
 .card.rest:hover { transform: none; border-color: var(--seam); }
@@ -90,6 +93,27 @@
 .candle { background: var(--candle); border-color: var(--candle); color: var(--candle-ink); }
 .candle:hover { background: #F0B56A; border-color: #F0B56A; }
 .candle:active { background: var(--candle-deep); }
+
+/* bottom sheet under 768px (picker.html mobile rules, design/shots/picker-mobile.png) */
+.handle { display: block; flex-shrink: 0; width: 36px; height: 4px; border-radius: 2px; background: var(--seam-strong); margin: 10px auto 0; }
+.dialog.sheet {
+  left: 0; right: 0; top: auto; bottom: 0; width: auto; transform: none;
+  border-radius: var(--r-lg) var(--r-lg) 0 0; max-height: 92vh; overflow: hidden;
+  display: flex; flex-direction: column;
+  animation: riseIn var(--d-slow) var(--ease-out) both;
+}
+.sheet .dh { padding: var(--s-4) var(--s-5) var(--s-4); }
+.sheet .title { font-size: 26px; }
+.sheet .lede { font-size: var(--text-sm); }
+.sheet .close { top: var(--s-4); right: var(--s-4); }
+.sheet .cards { grid-template-columns: 1fr; padding: 0 var(--s-5); gap: var(--s-3); overflow: auto; min-height: 0; }
+.sheet .card { padding: var(--s-4); gap: var(--s-2); }
+.sheet .name { font-size: 26px; }
+.sheet .df { margin-top: var(--s-3); padding: var(--s-4) var(--s-5) var(--s-5); flex-wrap: wrap; }
+.sheet .foot { flex-basis: 100%; order: 3; }
+.sheet .btn { flex: 1; justify-content: center; white-space: nowrap; }
+/* compact card: one-line blurb */
+.clamp { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 
 /* keyframes copied as-is from seance-design.md (CSS modules scope names per file) */
 @keyframes breathe{0%,100%{opacity:.35}50%{opacity:.85}}

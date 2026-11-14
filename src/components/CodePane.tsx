@@ -1,11 +1,13 @@
 /**
  * CodePane — CRT-surface COBOL viewer. The Planchette glides to the first line
  * of the active range; a candle bracket spans the whole range. Both move with
- * CSS transforms (--d-glide, --ease-glide), so reduced motion just jumps.
+ * CSS transforms (--d-glide, --ease-glide). Under prefers-reduced-motion the
+ * planchette jumps and every line shows at once (no stagger delay). Req 10.3.
  */
 import { useRef, useEffect } from 'react'
 import type { Range } from '../lib/ranges.ts'
 import { firstLine } from '../lib/ranges.ts'
+import { useReducedMotion } from '../state/useMedia.ts'
 import s from './CodePane.module.css'
 
 const LINE_HEIGHT = 19 // 13px / 19px code
@@ -20,6 +22,8 @@ interface CodePaneProps {
   errorAt?: { line: number; token?: string }
   /** a golden séance is replaying (Req 2.3) */
   cached?: boolean
+  /** leave room under the code for the docked GhostCaption (mobile) */
+  reserveBottom?: boolean
 }
 
 const Mark = () => (
@@ -37,8 +41,12 @@ function Marked({ text, token }: { text: string; token?: string }) {
   return <>{text.slice(0, at)}<span className={s.token}>{text.slice(at, at + token!.length)}</span>{text.slice(at + token!.length)}</>
 }
 
-export function CodePane({ lines, activeRange: stepRange, streaming, filename, errorAt, cached }: CodePaneProps) {
+export function CodePane({ lines, activeRange: stepRange, streaming: streamWanted, filename, errorAt, cached, reserveBottom }: CodePaneProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
+  const reduced = useReducedMotion()
+  // the global reduced-motion rule shortens durations but not delays, so drop the stagger here
+  const streaming = streamWanted && !reduced
+  const glide = reduced ? { transition: 'none' } : undefined
   // a compile error takes over the highlight: the planchette points at the broken line
   const activeRange: Range | null = errorAt ? [errorAt.line, errorAt.line] : stepRange
   const a = activeRange ? activeRange[0] : 0
@@ -49,28 +57,27 @@ export function CodePane({ lines, activeRange: stepRange, streaming, filename, e
     const wrap = wrapRef.current
     if (!wrap || a === 0) return
     const top = TOP_PAD + (a - 1) * LINE_HEIGHT
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    wrap.scrollTo({ top: Math.max(0, top - wrap.clientHeight * 0.3), behavior: reduce ? 'auto' : 'smooth' })
-  }, [a, b])
+    wrap.scrollTo({ top: Math.max(0, top - wrap.clientHeight * 0.3), behavior: reduced ? 'auto' : 'smooth' })
+  }, [a, b, reduced])
 
   // .code already sits inside .codewrap's padding, so offsets start at 0
   const planchetteY = activeRange ? (firstLine(activeRange) - 1) * LINE_HEIGHT : 0
   const bracketH = (b - a + 1) * LINE_HEIGHT
 
   return (
-    <section className={s.pane} aria-label="COBOL program">
+    <section className={s.pane} aria-label="COBOL program" data-motion={reduced ? 'reduced' : 'full'}>
       <div className={s.paneH}>
         <h3 className={s.paneTitle}>COBOL</h3>
         {filename && <span className={s.meta}>{filename} · {lines.length} lines{cached ? ' · cached séance' : ''}</span>}
       </div>
-      <div className={`${s.codewrap} crt`} ref={wrapRef}>
+      <div className={`${s.codewrap} crt ${reserveBottom ? s.reserve : ''}`} ref={wrapRef}>
         <div className={s.code}>
           {activeRange && (
             <>
-              <div className={s.planchette} aria-hidden="true" style={{ transform: `translateY(${planchetteY}px)` }}>
+              <div className={s.planchette} aria-hidden="true" data-planchette style={{ transform: `translateY(${planchetteY}px)`, ...glide }}>
                 <Mark />
               </div>
-              <div className={s.bracket} aria-hidden="true" style={{ transform: `translateY(${planchetteY}px)`, height: `${bracketH}px` }} />
+              <div className={s.bracket} aria-hidden="true" style={{ transform: `translateY(${planchetteY}px)`, height: `${bracketH}px`, ...glide }} />
             </>
           )}
           {lines.map((line, i) => {

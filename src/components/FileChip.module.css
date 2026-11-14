@@ -10,4 +10,5 @@
 }
 .remove:hover:not(:disabled) { color: var(--bone); background: rgba(255,255,255,.06); }
 .remove:disabled { cursor: default; opacity: .5; }
-/* the steering hides the chip below 768; responsive layouts are task 13 */
+/* hidden on mobile, as seance-design.md says for the TaskInput FileChip */
+@media (max-width: 767px) { .file { display: none; } }

@@ -4,6 +4,7 @@
  * own: it moves when the user clicks, presses j/k, or presses Play.
  */
 import type { Step } from '../lib/schemas.ts'
+import { useReducedMotion } from '../state/useMedia.ts'
 import s from './GhostNarration.module.css'
 
 export const ASK_INPUT_ID = 'ghost-ask'
@@ -32,6 +33,8 @@ export function GhostNarration({
   steps, activeIndex, playing, waiting = 'The ghost is waiting for a program.', onStep, onPrev, onNext, onTogglePlay,
 }: GhostNarrationProps) {
   const active = steps[activeIndex]
+  // no typing caret under reduced motion (Req 10.3); the text is the same
+  const reduced = useReducedMotion()
 
   return (
     <section className={s.pane} aria-label="The ghost's explanation">
@@ -64,7 +67,7 @@ export function GhostNarration({
               {!isAhead && step.quote && <q className={s.quote}>{step.quote}</q>}
               {isAhead
                 ? <p className={s.aheadText}>The ghost hasn't reached line {a} yet.</p>
-                : <p className={`${s.text} ${isActive && playing ? s.speaking : ''}`}>{step.text}</p>}
+                : <p className={`${s.text} ${isActive && playing && !reduced ? s.speaking : ''}`} data-speaking={isActive && playing && !reduced ? '' : undefined}>{step.text}</p>}
             </div>
           )
         })}

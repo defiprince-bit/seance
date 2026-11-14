@@ -79,7 +79,7 @@ Phase A (tasks 1–9) is the end-to-end MVP: one live séance from task to agree
   - FileChip, 64 KB / 500-row limits, CSV header passed to summon, body encoded with `encodeStdin`
   - _Requirements: 1.4, 1.5, 1.7_
 
-- [ ] 13. Responsive layouts and reduced motion
+- [x] 13. Responsive layouts and reduced motion
   - Tablet tabs, mobile segmented control, GhostCaption, bottom-sheet picker, reduced-motion behaviour, focus rings
   - _Requirements: 10.1, 10.2, 10.3, 10.4_
 
