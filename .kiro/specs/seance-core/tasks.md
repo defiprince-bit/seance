@@ -91,5 +91,5 @@ Phase A (tasks 1–9) is the end-to-end MVP: one live séance from task to agree
   - Per-IP limit (10/min, in-memory, best effort), per-instance response cache by input hash, confirm no secret reaches the client bundle (`grep` the `dist/` output in a test)
   - _Requirements: 12.1, 12.2, 12.3, 12.4_
 
-- [ ]* 16. Playwright smoke test of the sales golden séance
+- [x]* 16. Playwright smoke test of the sales golden séance
   - _Requirements: 2.2, 7.2_
