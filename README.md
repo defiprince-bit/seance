@@ -4,8 +4,7 @@
 
 **Live:** https://seance-psi.vercel.app
 
-<!-- TODO: replace with a real screenshot, e.g. docs/screenshot.png (the workspace after the sales séance) -->
-> Screenshot placeholder: add `docs/screenshot.png` and replace this line with `![Séance workspace](docs/screenshot.png)`.
+![Séance workspace](docs/screenshot.png)
 
 ## What it does
 
