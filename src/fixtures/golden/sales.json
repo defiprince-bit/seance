@@ -58,7 +58,7 @@
           5,
           6
         ],
-        "quote": "Back in the day, we’d set up our tables like this.",
+        "quote": "Back in the day, we’d declare every variable up front, like this.",
         "text": "DATA DIVISION and WORKING-STORAGE define variables; Python uses imports and variable declarations."
       },
       {
@@ -107,7 +107,7 @@
           24
         ],
         "quote": "Convert text to number and add to total.",
-        "text": "MOVE FUNCTION NUMVAL to WS-AMOUNT and ADD to WS-TOTAL; Python converts string to Decimal and adds with rounding."
+        "text": "MOVE FUNCTION NUMVAL to WS-AMOUNT and ADD to WS-TOTAL; Python converts the string to Decimal and truncates with ROUND_DOWN, like COBOL."
       },
       {
         "range": [

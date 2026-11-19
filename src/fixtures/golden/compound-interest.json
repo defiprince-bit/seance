@@ -64,7 +64,7 @@
           18
         ],
         "quote": "The PERFORM loop was my favorite, like a drumbeat.",
-        "text": "PERFORM loop multiplies each year. Python: for loop with quantized multiplication."
+        "text": "PERFORM loop multiplies each year, and each result is truncated to cents (so 1628.86, not the unrounded 1628.89). Python: for loop with quantized multiplication."
       },
       {
         "range": [
@@ -138,7 +138,7 @@
         ]
       }
     ],
-    "note": "COBOL keeps exact fixed-point decimals and Python mirrors them with Decimal, truncating like COBOL."
+    "note": "COBOL keeps exact fixed-point decimals and Python mirrors them with Decimal, truncating like COBOL. The 1628.86 comes from truncating the balance to cents each year. The unrounded figure is about 1628.89."
   },
   "pythonRun": {
     "stdout": "FINAL AMOUNT: 1628.86",

@@ -216,16 +216,44 @@
         ]
       },
       {
-        "text": "    if hours > Decimal(\"40\"):\n        ot_hours = quantize(hours - Decimal(\"40\"))\n        ot_pay = quantize(ot_hours * rate * Decimal(\"1.5\"))\n        pay = quantize(Decimal(\"40\") * rate + ot_pay)",
+        "text": "    if hours > Decimal(\"40\"):",
         "maps": [
           34,
+          34
+        ]
+      },
+      {
+        "text": "        ot_hours = quantize(hours - Decimal(\"40\"))",
+        "maps": [
+          35,
+          35
+        ]
+      },
+      {
+        "text": "        ot_pay = quantize(ot_hours * rate * Decimal(\"1.5\"))",
+        "maps": [
+          36,
+          36
+        ]
+      },
+      {
+        "text": "        pay = quantize(Decimal(\"40\") * rate + ot_pay)",
+        "maps": [
+          37,
           37
         ]
       },
       {
-        "text": "    else:\n        pay = quantize(hours * rate)",
+        "text": "    else:",
         "maps": [
           38,
+          38
+        ]
+      },
+      {
+        "text": "        pay = quantize(hours * rate)",
+        "maps": [
+          39,
           39
         ]
       },
