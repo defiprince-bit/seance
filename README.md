@@ -4,6 +4,10 @@
 
 **Live:** https://seance-psi.vercel.app
 
+**Demo video:** https://youtu.be/sAPjhQYbzJ8
+
+[![Watch the Séance demo](https://img.youtube.com/vi/sAPjhQYbzJ8/maxresdefault.jpg)](https://youtu.be/sAPjhQYbzJ8)
+
 ![Séance workspace](docs/screenshot.png)
 
 ## What it does
