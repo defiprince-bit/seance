@@ -52,6 +52,12 @@ export function TopBar({ sessionTitle, status, onEnd, onSpiritConfirm }: TopBarP
       <LanguageTrigger onConfirm={onSpiritConfirm} />
 
       <StatusPill tone={status.tone} label={status.label} />
+      <a className={s.homeBtn} href="/" aria-label="Back to the Séance home page">
+        <svg viewBox="0 0 24 24" width={16} height={16} fill="none" aria-hidden="true">
+          <path d="M3 11.5 12 4l9 7.5M5.5 9.5V20h13V9.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        <span>Home</span>
+      </a>
       <button className={s.endBtn} onClick={onEnd} type="button">End séance</button>
     </header>
   )

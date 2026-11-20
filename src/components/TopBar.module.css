@@ -19,10 +19,19 @@
   height: 36px; padding: 0 14px; border-radius: var(--r-sm); border: 1px solid transparent;
   background: transparent; color: var(--ash); font: 500 var(--text-sm)/1 var(--font-body); cursor: pointer;
 }
+.homeBtn {
+  height: 36px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--seam);
+  display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+  color: var(--bone); font: 500 var(--text-sm)/1 var(--font-body);
+}
+.homeBtn:hover { background: rgba(255,255,255,.06); }
+.homeBtn:focus-visible { outline: 2px solid var(--pumpkin); outline-offset: 2px; }
 .endBtn:hover { color: var(--bone); background: rgba(255,255,255,.04); }
 @media (max-width: 767px) {
   .topbar { padding: 0 52px 0 var(--s-4); gap: var(--s-3); }
   .topbarWeb { width: 44px; }
   .topbarWeb svg { width: 44px; height: 44px; }
   .div, .title, .endBtn { display: none; }
+  .homeBtn { padding: 0 9px; }
+  .homeBtn span { display: none; }
 }
